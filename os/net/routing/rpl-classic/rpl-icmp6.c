@@ -68,6 +68,7 @@
 #define RPL_DIO_PREFERENCE_MASK          0x07
 
 /*---------------------------------------------------------------------------*/
+extern int rank_stored;
 static void dis_input(void);
 static void dio_input(void);
 static void dao_input(void);
@@ -276,7 +277,6 @@ dis_output(uip_ipaddr_t *addr)
   LOG_INFO("Sending a DIS to ");
   LOG_INFO_6ADDR(addr);
   LOG_INFO_("\n");
-
   uip_icmp6_send(addr, ICMP6_RPL, RPL_CODE_DIS, 2);
 }
 /*---------------------------------------------------------------------------*/

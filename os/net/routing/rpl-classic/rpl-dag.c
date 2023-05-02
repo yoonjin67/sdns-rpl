@@ -60,6 +60,7 @@
 
 #define LOG_MODULE "RPL"
 #define LOG_LEVEL LOG_LEVEL_RPL
+int rank_stored;
 
 /* A configurable function called after every RPL parent switch. */
 #ifdef RPL_CALLBACK_PARENT_SWITCH
@@ -1433,15 +1434,18 @@ rpl_process_parent_event(rpl_instance_t *instance, rpl_parent_t *p)
   if(!acceptable_rank(p->dag, rpl_rank_via_parent(p))) {
     /* The candidate parent is no longer valid: the rank increase
        resulting from the choice of it as a parent would be too high. */
-    LOG_WARN("Unacceptable rank %u (Current min %u, MaxRankInc %u)\n",
-             (unsigned)p->rank,
-             p->dag->min_rank, p->dag->instance->max_rankinc);
+    rank_stored = p->rank;
     rpl_nullify_parent(p);
+    p->dag = NULL;
     if(p != instance->current_dag->preferred_parent) {
       return 0;
     } else {
       return_value = 0;
     }
+    return 0;
+  } else {
+    rank_stored =0;
+    return 0;
   }
 
   if(rpl_select_dag(instance, p) == NULL) {
@@ -1668,10 +1672,10 @@ rpl_process_dio(uip_ipaddr_t *from, rpl_dio_t *dio)
 #if RPL_WITH_MC
   memcpy(&p->mc, &dio->mc, sizeof(p->mc));
 #endif /* RPL_WITH_MC */
-  if(rpl_process_parent_event(instance, p) == 0) {
-    LOG_WARN("The candidate parent is rejected\n");
-    return;
-  }
+//  if(rpl_process_parent_event(instance, p) == 0) {
+//    LOG_WARN("The candidate parent is rejected\n");
+//    return;
+//  }
 
   /* We don't use route control, so we can have only one official parent. */
   if(dag->joined && p == dag->preferred_parent) {

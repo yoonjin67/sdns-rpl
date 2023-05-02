@@ -50,6 +50,7 @@
 
 #include "sys/log.h"
 
+extern int rank_stored;
 #define LOG_MODULE "RPL"
 #define LOG_LEVEL LOG_LEVEL_RPL
 
@@ -145,7 +146,7 @@ parent_path_cost(rpl_parent_t *p)
 {
   uint16_t base;
 
-  if(p == NULL || p->dag == NULL || p->dag->instance == NULL) {
+  if(p == NULL || p->dag == NULL || p->dag->instance == NULL || rank_stored == 0) {
     return 0xffff;
   }
 
