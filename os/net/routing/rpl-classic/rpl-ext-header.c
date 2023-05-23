@@ -142,6 +142,9 @@ rpl_ext_header_hbh_update(uint8_t *ext_buf, int opt_offset)
           instance->current_dag->rank);
 
   if((down && !sender_closer) || (!down && sender_closer)) {
+    if(sender_rank == 65535) {
+	    return 1;
+    }
     LOG_WARN("Loop detected - senderrank: %d my-rank: %d sender_closer: %d\n",
              sender_rank, instance->current_dag->rank,
              sender_closer);

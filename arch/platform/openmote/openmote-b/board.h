@@ -61,13 +61,6 @@
  *
  * @{
  */
-#ifndef FLASH_CCA_CONF_BOOTLDR_BACKDOOR_PORT_A_PIN
-#define FLASH_CCA_CONF_BOOTLDR_BACKDOOR_PORT_A_PIN 7 /**< Pin PA7 activates the boot loader */
-#endif
-
-#ifndef FLASH_CCA_CONF_BOOTLDR_BACKDOOR_ACTIVE_HIGH
-#define FLASH_CCA_CONF_BOOTLDR_BACKDOOR_ACTIVE_HIGH 0 /**< A logic low level activates the boot loader */
-#endif
 /** @} */
 /*---------------------------------------------------------------------------*/
 /** \name OpenMote-B LED configuration

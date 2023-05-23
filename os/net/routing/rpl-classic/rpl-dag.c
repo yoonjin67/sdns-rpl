@@ -1412,7 +1412,6 @@ int
 rpl_process_parent_event(rpl_instance_t *instance, rpl_parent_t *p)
 {
   int return_value;
-  rpl_parent_t *last_parent = instance->current_dag->preferred_parent;
 
 #if LOG_DBG_ENABLED
   rpl_rank_t old_rank;
@@ -1435,8 +1434,6 @@ rpl_process_parent_event(rpl_instance_t *instance, rpl_parent_t *p)
     /* The candidate parent is no longer valid: the rank increase
        resulting from the choice of it as a parent would be too high. */
     rank_stored = p->rank;
-    rpl_nullify_parent(p);
-    p->dag = NULL;
     if(p != instance->current_dag->preferred_parent) {
       return 0;
     } else {
@@ -1446,15 +1443,6 @@ rpl_process_parent_event(rpl_instance_t *instance, rpl_parent_t *p)
   } else {
     rank_stored =0;
     return 0;
-  }
-
-  if(rpl_select_dag(instance, p) == NULL) {
-    if(last_parent != NULL) {
-      /* No suitable parent anymore; trigger a local repair. */
-      LOG_ERR("No parents found in any DAG\n");
-      rpl_local_repair(instance);
-      return 0;
-    }
   }
 
 #if LOG_DBG_ENABLED
