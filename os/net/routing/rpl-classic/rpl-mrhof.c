@@ -211,8 +211,12 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   rpl_dag_t *dag;
   uint16_t p1_cost;
   uint16_t p2_cost;
+  static uint16_t p1_cnt = 0;
+  static uint16_t p2_cnt = 0;
   int p1_is_acceptable;
   int p2_is_acceptable;
+  p1_cnt%=65536;
+  p2_cnt%=65536;
 
   p1_is_acceptable = p1 != NULL && parent_is_acceptable(p1);
   p2_is_acceptable = p2 != NULL && parent_is_acceptable(p2);
@@ -236,7 +240,13 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
     }
   }
 
-  return p1_cost < p2_cost ? p1 : p2;
+  if((p1_cost < p2_cost) || (p1_cnt>=p2_cnt)) {
+    ++p1_cnt;
+    return p1;
+  } else {
+    ++p2_cnt;
+    return p2;
+  }
 }
 /*---------------------------------------------------------------------------*/
 static rpl_dag_t *
