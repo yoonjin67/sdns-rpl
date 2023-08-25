@@ -8,8 +8,8 @@
       org.contikios.cooja.radiomediums.UDGM
       <transmitting_range>50.0</transmitting_range>
       <interference_range>50.0</interference_range>
-      <success_ratio_tx>1.0</success_ratio_tx>
-      <success_ratio_rx>1.0</success_ratio_rx>
+      <success_ratio_tx>0.8</success_ratio_tx>
+      <success_ratio_rx>0.8</success_ratio_rx>
     </radiomedium>
     <events>
       <logoutput>40000</logoutput>
@@ -115,7 +115,7 @@ make -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <mote>
         <interface_config>
           org.contikios.cooja.interfaces.Position
-          <pos x="12.779318616702257" y="8.464865358169643" />
+          <pos x="33.99676978588104" y="32.11911618709564" />
         </interface_config>
         <interface_config>
           org.contikios.cooja.contikimote.interfaces.ContikiMoteID
@@ -125,7 +125,7 @@ make -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <mote>
         <interface_config>
           org.contikios.cooja.interfaces.Position
-          <pos x="9.391922400291703" y="49.22878206790311" />
+          <pos x="14.000079035758972" y="17.666956782341003" />
         </interface_config>
         <interface_config>
           org.contikios.cooja.contikimote.interfaces.ContikiMoteID
@@ -135,7 +135,7 @@ make -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <mote>
         <interface_config>
           org.contikios.cooja.interfaces.Position
-          <pos x="48.16367625505583" y="33.27520746599595" />
+          <pos x="30.19918203353882" y="7.748746871948242" />
         </interface_config>
         <interface_config>
           org.contikios.cooja.contikimote.interfaces.ContikiMoteID
@@ -145,7 +145,7 @@ make -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <mote>
         <interface_config>
           org.contikios.cooja.interfaces.Position
-          <pos x="16.582742473429345" y="24.932911331640646" />
+          <pos x="42.48203933238983" y="18.338564038276672" />
         </interface_config>
         <interface_config>
           org.contikios.cooja.contikimote.interfaces.ContikiMoteID
@@ -155,7 +155,7 @@ make -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <mote>
         <interface_config>
           org.contikios.cooja.interfaces.Position
-          <pos x="8.445564421140666" y="6.770205395698742" />
+          <pos x="17.69116222858429" y="28.173863887786865" />
         </interface_config>
         <interface_config>
           org.contikios.cooja.contikimote.interfaces.ContikiMoteID
@@ -165,7 +165,7 @@ make -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <mote>
         <interface_config>
           org.contikios.cooja.interfaces.Position
-          <pos x="87.04968129458189" y="34.46536562612724" />
+          <pos x="79.93162274360657" y="12.080276012420654" />
         </interface_config>
         <interface_config>
           org.contikios.cooja.contikimote.interfaces.ContikiMoteID
@@ -175,7 +175,7 @@ make -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <mote>
         <interface_config>
           org.contikios.cooja.interfaces.Position
-          <pos x="94.47123252519145" y="18.275940194868184" />
+          <pos x="64.60466980934143" y="0.9001433849334717" />
         </interface_config>
         <interface_config>
           org.contikios.cooja.contikimote.interfaces.ContikiMoteID
@@ -185,7 +185,7 @@ make -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <mote>
         <interface_config>
           org.contikios.cooja.interfaces.Position
-          <pos x="95.28044254364556" y="17.683438211793558" />
+          <pos x="93.82213056087494" y="41.28759205341339" />
         </interface_config>
         <interface_config>
           org.contikios.cooja.contikimote.interfaces.ContikiMoteID
@@ -195,7 +195,7 @@ make -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <mote>
         <interface_config>
           org.contikios.cooja.interfaces.Position
-          <pos x="56.124622439456076" y="33.88966252832571" />
+          <pos x="87.21247911453247" y="26.988092064857483" />
         </interface_config>
         <interface_config>
           org.contikios.cooja.contikimote.interfaces.ContikiMoteID
@@ -205,7 +205,7 @@ make -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <mote>
         <interface_config>
           org.contikios.cooja.interfaces.Position
-          <pos x="98.33149749474546" y="37.448034626592744" />
+          <pos x="71.16163372993469" y="32.09183216094971" />
         </interface_config>
         <interface_config>
           org.contikios.cooja.contikimote.interfaces.ContikiMoteID
@@ -215,7 +215,7 @@ make -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <mote>
         <interface_config>
           org.contikios.cooja.interfaces.Position
-          <pos x="58.75337436025891" y="68.64082018992522" />
+          <pos x="68.79040896892548" y="98.53107631206512" />
         </interface_config>
         <interface_config>
           org.contikios.cooja.contikimote.interfaces.ContikiMoteID
@@ -225,7 +225,7 @@ make -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <mote>
         <interface_config>
           org.contikios.cooja.interfaces.Position
-          <pos x="66.83816496627988" y="68.38008376830592" />
+          <pos x="63.564664125442505" y="93.16288828849792" />
         </interface_config>
         <interface_config>
           org.contikios.cooja.contikimote.interfaces.ContikiMoteID
@@ -235,7 +235,7 @@ make -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <mote>
         <interface_config>
           org.contikios.cooja.interfaces.Position
-          <pos x="90.88648665466316" y="50.942053906416575" />
+          <pos x="86.49119436740875" y="89.54256176948547" />
         </interface_config>
         <interface_config>
           org.contikios.cooja.contikimote.interfaces.ContikiMoteID
@@ -245,7 +245,7 @@ make -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <mote>
         <interface_config>
           org.contikios.cooja.interfaces.Position
-          <pos x="68.80089833632896" y="84.17294684073734" />
+          <pos x="94.33721899986267" y="92.1837568283081" />
         </interface_config>
         <interface_config>
           org.contikios.cooja.contikimote.interfaces.ContikiMoteID
@@ -255,7 +255,7 @@ make -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <mote>
         <interface_config>
           org.contikios.cooja.interfaces.Position
-          <pos x="73.6760846183129" y="81.76699743886633" />
+          <pos x="52.18513309955597" y="71.82173132896423" />
         </interface_config>
         <interface_config>
           org.contikios.cooja.contikimote.interfaces.ContikiMoteID
@@ -265,7 +265,7 @@ make -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <mote>
         <interface_config>
           org.contikios.cooja.interfaces.Position
-          <pos x="0.2960103456537466" y="98.5587829617092" />
+          <pos x="22.88500666618347" y="66.93276166915894" />
         </interface_config>
         <interface_config>
           org.contikios.cooja.contikimote.interfaces.ContikiMoteID
@@ -275,7 +275,7 @@ make -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <mote>
         <interface_config>
           org.contikios.cooja.interfaces.Position
-          <pos x="8.130479493904208" y="57.642099520821645" />
+          <pos x="43.122485280036926" y="64.95631039142609" />
         </interface_config>
         <interface_config>
           org.contikios.cooja.contikimote.interfaces.ContikiMoteID
@@ -285,7 +285,7 @@ make -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <mote>
         <interface_config>
           org.contikios.cooja.interfaces.Position
-          <pos x="30.550120982984865" y="85.58346736403402" />
+          <pos x="45.096197724342346" y="54.212602972984314" />
         </interface_config>
         <interface_config>
           org.contikios.cooja.contikimote.interfaces.ContikiMoteID
@@ -295,7 +295,7 @@ make -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <mote>
         <interface_config>
           org.contikios.cooja.interfaces.Position
-          <pos x="29.65300377698182" y="63.50257213104861" />
+          <pos x="3.1244218349456787" y="77.89279818534851" />
         </interface_config>
         <interface_config>
           org.contikios.cooja.contikimote.interfaces.ContikiMoteID
@@ -305,7 +305,7 @@ make -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <mote>
         <interface_config>
           org.contikios.cooja.interfaces.Position
-          <pos x="34.92110687576687" y="70.71381297232249" />
+          <pos x="38.19102346897125" y="63.066357374191284" />
         </interface_config>
         <interface_config>
           org.contikios.cooja.contikimote.interfaces.ContikiMoteID
@@ -317,13 +317,14 @@ make -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
   <plugin>
     org.contikios.cooja.plugins.Visualizer
     <plugin_config>
+      <moterelations>true</moterelations>
       <skin>org.contikios.cooja.plugins.skins.IDVisualizerSkin</skin>
       <skin>org.contikios.cooja.plugins.skins.UDGMVisualizerSkin</skin>
       <skin>org.contikios.cooja.plugins.skins.GridVisualizerSkin</skin>
       <skin>org.contikios.cooja.plugins.skins.MoteTypeVisualizerSkin</skin>
-      <viewport>1.92914676942954 0.0 0.0 1.92914676942954 75.9259843662471 55.41790879138101</viewport>
+      <viewport>1.11640438045691 0.0 0.0 1.11640438045691 158.53124095268927 88.10295647649362</viewport>
     </plugin_config>
-    <bounds x="1" y="1" height="400" width="400" z="3" />
+    <bounds x="1" y="1" height="400" width="400" z="1" />
   </plugin>
   <plugin>
     org.contikios.cooja.plugins.LogListener
@@ -332,7 +333,7 @@ make -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <formatted_time />
       <coloring />
     </plugin_config>
-    <bounds x="402" y="162" height="500" width="1184" z="2" />
+    <bounds x="455" y="506" height="500" width="1184" z="3" />
   </plugin>
   <plugin>
     org.contikios.cooja.plugins.Notes
@@ -340,7 +341,7 @@ make -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <notes>Enter notes here</notes>
       <decorations>true</decorations>
     </plugin_config>
-    <bounds x="680" y="0" height="160" width="904" z="1" />
+    <bounds x="680" y="0" height="160" width="904" z="4" />
   </plugin>
   <plugin>
     org.contikios.cooja.plugins.ScriptRunner
@@ -445,6 +446,15 @@ while(true) {&#xD;
 }</script>
       <active>true</active>
     </plugin_config>
-    <bounds x="953" y="43" height="726" width="612" />
+    <bounds x="953" y="43" height="726" width="612" z="2" />
+  </plugin>
+  <plugin>
+    org.contikios.cooja.plugins.RadioLogger
+    <plugin_config>
+      <split>150</split>
+      <formatted_time />
+      <analyzers name="6lowpan-pcap" />
+    </plugin_config>
+    <bounds x="439" y="195" height="300" width="500" z="7" />
   </plugin>
 </simconf>
