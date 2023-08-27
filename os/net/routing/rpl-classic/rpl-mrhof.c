@@ -215,8 +215,6 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   static uint16_t p2_cnt = 0;
   int p1_is_acceptable;
   int p2_is_acceptable;
-  p1_cnt%=65536;
-  p2_cnt%=65536;
 
   p1_is_acceptable = p1 != NULL && parent_is_acceptable(p1);
   p2_is_acceptable = p2 != NULL && parent_is_acceptable(p2);
@@ -242,12 +240,14 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
 
   if((p1_cost <= p2_cost+PARENT_SWITCH_THRESHOLD) || (p1_cnt>=p2_cnt)) {
     ++p2_cnt;
+    ++p1_cnt;
     return p2;
-  } else if((p1_cost > p2_cost+PARENT_SWITCH_THRESHOLD) || (p1_cnt>=p2_cnt)) {
+  } else if((p1_cost > p2_cost+PARENT_SWITCH_THRESHOLD) || (p1_cnt<=p2_cnt)) {
     ++p1_cnt;
     return p1;
   } else {
-      return p2;
+    ++p2_cnt;
+    return p2;
   }
 }
 /*---------------------------------------------------------------------------*/
