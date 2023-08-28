@@ -167,6 +167,8 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   rpl_dag_t *dag;
   uint16_t p1_cost;
   uint16_t p2_cost;
+  uint16_t p1_cnt=0;
+  uint16_t p2_cnt=0;
   int p1_is_acceptable;
   int p2_is_acceptable;
 
@@ -174,10 +176,19 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   p2_is_acceptable = p2 != NULL && parent_is_acceptable(p2);
 
   if(!p1_is_acceptable) {
-    return p2_is_acceptable ? p2 : NULL;
+    if(p2_is_acceptable) {
+        ++p2_cnt;
+	return p2;
+    }
+    return NULL;
   }
   if(!p2_is_acceptable) {
-    return p1_is_acceptable ? p1 : NULL;
+        if(p1_is_acceptable) {
+            ++p1_cnt;
+            return p1;
+        }
+    ++p2_cnt;
+    return NULL;
   }
 
   dag = p1->dag; /* Both parents are in the same DAG. */
@@ -196,6 +207,14 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
     }
     /* None of the nodes is the current preferred parent; choose the
        parent with best link metric. */
+    if(p1_cnt<p2_cnt) {
+	++p1_cnt;
+	return p1;
+    }
+    if(p1_cnt>p2_cnt) {
+	++p2_cnt;
+	return p2;
+    }
     return parent_link_metric(p1) < parent_link_metric(p2) ? p1 : p2;
   }
 }
