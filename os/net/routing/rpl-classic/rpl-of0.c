@@ -176,10 +176,12 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   p2_is_acceptable = p2 != NULL && parent_is_acceptable(p2);
 
   if(!p1_is_acceptable) {
-    return p2_is_acceptable ? p2 : NULL;
+    if(p2_is_acceptable) {p2++;return p2;}
+    return NULL;
   }
   if(!p2_is_acceptable) {
-    return p1_is_acceptable ? p1 : NULL;
+    if(p1_is_acceptable) {p1++;return p1;}
+    return NULL;
   }
 
   dag = p1->dag; /* Both parents are in the same DAG. */
@@ -204,6 +206,11 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
       ++p1_cnt;
       return p2;
     } else if((p1_cost<p2_cost)|| (p1_cnt<=p2_cnt)) {
+      ++p1_cnt;
+      return p1;
+    }
+    else if((p2_cost<p1_cost) || (p2_cnt>=p1_cnt)) {
+      ++p2_cnt;
       ++p1_cnt;
       return p1;
     } else {
