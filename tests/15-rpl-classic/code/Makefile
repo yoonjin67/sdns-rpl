@@ -1,6 +1,6 @@
 all: dis-sender sender-node receiver-node root-node
 CONTIKI=../../..
-TARGET = openmote
+#TARGET = openmote
 #BOARD = openmote-b
 
 MODULES += os/services/shell

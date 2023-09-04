@@ -68,7 +68,6 @@
 #define RPL_DIO_PREFERENCE_MASK          0x07
 
 /*---------------------------------------------------------------------------*/
-extern int rank_stored;
 static void dis_input(void);
 static void dio_input(void);
 static void dao_input(void);
@@ -277,6 +276,7 @@ dis_output(uip_ipaddr_t *addr)
   LOG_INFO("Sending a DIS to ");
   LOG_INFO_6ADDR(addr);
   LOG_INFO_("\n");
+
   uip_icmp6_send(addr, ICMP6_RPL, RPL_CODE_DIS, 2);
 }
 /*---------------------------------------------------------------------------*/
@@ -657,7 +657,6 @@ dao_input_storing(void)
   uint8_t subopt_type;
   uip_ipaddr_t prefix;
   uip_ds6_route_t *rep;
-  uint8_t buffer_length;
   int pos;
   int len;
   int i;
@@ -673,12 +672,22 @@ dao_input_storing(void)
   uip_ipaddr_copy(&dao_sender_addr, &UIP_IP_BUF->srcipaddr);
 
   buffer = UIP_ICMP_PAYLOAD;
-  buffer_length = uip_len - uip_l3_icmp_hdr_len;
+  uint16_t buffer_length = uip_len - uip_l3_icmp_hdr_len;
+  if(buffer_length < 4) {
+    LOG_WARN("Dropping incomplete DAO (%"PRIu16" < %d)\n",
+	     buffer_length, 4);
+    return;
+  }
+
+  uint16_t last_valid_pos = buffer_length - 1;
 
   pos = 0;
   instance_id = buffer[pos++];
-
   instance = rpl_get_instance(instance_id);
+  if(instance == NULL) {
+    LOG_ERR("Cannot get RPL instance\n");
+    return;
+  }
 
   lifetime = instance->default_lifetime;
 
@@ -692,6 +701,12 @@ dao_input_storing(void)
 
   /* Is the DAG ID present? */
   if(flags & RPL_DAO_D_FLAG) {
+      if(last_valid_pos < pos + 16) {
+	LOG_WARN("Dropping incomplete DAO (%"PRIu16" < %d)\n",
+		 last_valid_pos, pos + 16);
+	return;
+      }
+
     if(memcmp(&dag->dag_id, &buffer[pos], sizeof(dag->dag_id))) {
       LOG_INFO("Ignoring a DAO for a DAG different from ours\n");
       return;
@@ -739,12 +754,22 @@ dao_input_storing(void)
       len = 1;
     } else {
       /* The option consists of a two-byte header and a payload. */
+      if(last_valid_pos < i + 1) {
+	LOG_WARN("Dropping incomplete DAO (%"PRIu16" < %d)\n",
+		 last_valid_pos, i + 1);
+	return;
+      }
       len = 2 + buffer[i + 1];
     }
 
     switch(subopt_type) {
     case RPL_OPTION_TARGET:
       /* Handle the target option. */
+      if(last_valid_pos < i + 3) {
+	LOG_WARN("Dropping incomplete DAO (%"PRIu16" < %d)\n",
+		 last_valid_pos, i + 3);
+	return;
+      }
       prefixlen = buffer[i + 3];
       if(prefixlen == 0) {
         /* Ignore option targets with a prefix length of 0. */
@@ -755,7 +780,7 @@ dao_input_storing(void)
         return;
       }
       if(i + 4 + ((prefixlen + 7) / CHAR_BIT) > buffer_length) {
-        LOG_ERR("Insufficient space to copy RPL Target of %d bits\n",
+        LOG_ERR("Incomplete DAO target option with prefix length of %d bits\n",
                 prefixlen);
         return;
       }
@@ -766,6 +791,11 @@ dao_input_storing(void)
       /* The path sequence and control are ignored. */
       /*      pathcontrol = buffer[i + 3];
               pathsequence = buffer[i + 4];*/
+      if(last_valid_pos < i + 5) {
+	LOG_WARN("Dropping incomplete DAO (%"PRIu16" < %d)\n",
+		 last_valid_pos, i + 5);
+	return;
+      }
       lifetime = buffer[i + 5];
       /* The parent address is also ignored. */
       break;
@@ -816,8 +846,7 @@ dao_input_storing(void)
         uint8_t out_seq;
         out_seq = prepare_for_dao_fwd(sequence, rep);
 
-        LOG_DBG("Forwarding No-path DAO to parent - out_seq:%d",
-                out_seq);
+        LOG_DBG("Forwarding No-path DAO out_seq:%d to parent ", out_seq);
         LOG_DBG_6ADDR(rpl_parent_get_ipaddr(dag->preferred_parent));
         LOG_DBG_("\n");
 
@@ -948,7 +977,6 @@ dao_input_nonstoring(void)
   uint8_t flags;
   uint8_t subopt_type;
   uip_ipaddr_t prefix;
-  uint8_t buffer_length;
   int pos;
   int len;
   int i;
@@ -964,7 +992,14 @@ dao_input_nonstoring(void)
   memset(&dao_parent_addr, 0, 16);
 
   buffer = UIP_ICMP_PAYLOAD;
-  buffer_length = uip_len - uip_l3_icmp_hdr_len;
+  uint16_t buffer_length = uip_len - uip_l3_icmp_hdr_len;
+  if(buffer_length < 4) {
+    LOG_WARN("Dropping incomplete DAO (%"PRIu16" < %d)\n",
+	     buffer_length, 4);
+    return;
+  }
+
+  uint16_t last_valid_pos = buffer_length - 1;
 
   pos = 0;
   instance_id = buffer[pos++];
@@ -979,6 +1014,10 @@ dao_input_nonstoring(void)
   dag = instance->current_dag;
   /* Is the DAG ID present? */
   if(flags & RPL_DAO_D_FLAG) {
+    if(pos + sizeof(dag->dag_id) > buffer_length) {
+      LOG_WARN("Insufficient data to read DAG ID from DAO\n");
+      return;
+    }
     if(memcmp(&dag->dag_id, &buffer[pos], sizeof(dag->dag_id))) {
       LOG_INFO("Ignoring a DAO for a DAG different from ours\n");
       return;
@@ -993,12 +1032,22 @@ dao_input_nonstoring(void)
       len = 1;
     } else {
       /* The option consists of a two-byte header and a payload. */
+      if(last_valid_pos < i + 1) {
+	LOG_WARN("Dropping incomplete DAO (%"PRIu16" < %d)\n",
+		 last_valid_pos, i + 1);
+	return;
+      }
       len = 2 + buffer[i + 1];
     }
 
     switch(subopt_type) {
     case RPL_OPTION_TARGET:
       /* Handle the target option. */
+      if(last_valid_pos < i + 3) {
+	LOG_WARN("Dropping incomplete DAO (%"PRIu16" < %d)\n",
+		 last_valid_pos, i + 3);
+	return;
+      }
       prefixlen = buffer[i + 3];
       if(prefixlen == 0) {
         /* Ignore option targets with a prefix length of 0. */
@@ -1009,10 +1058,11 @@ dao_input_nonstoring(void)
         return;
       }
       if(i + 4 + ((prefixlen + 7) / CHAR_BIT) > buffer_length) {
-        LOG_ERR("Insufficient space to copy RPL Target of %d bits\n",
+        LOG_ERR("Incomplete DAO target option with prefix length of %d bits\n",
                 prefixlen);
         return;
       }
+
       memset(&prefix, 0, sizeof(prefix));
       memcpy(&prefix, buffer + i + 4, (prefixlen + 7) / CHAR_BIT);
       break;
@@ -1020,6 +1070,11 @@ dao_input_nonstoring(void)
       /* The path sequence and control are ignored. */
       /*      pathcontrol = buffer[i + 3];
               pathsequence = buffer[i + 4];*/
+      if(i + 6 + 16 > buffer_length) {
+	LOG_WARN("Incomplete DAO transit option (%d > %"PRIu16")\n",
+		 i + 6 + 16, buffer_length);
+	return;
+      }
       lifetime = buffer[i + 5];
       if(len >= 20) {
         memcpy(&dao_parent_addr, buffer + i + 6, 16);
@@ -1069,6 +1124,11 @@ dao_input(void)
   LOG_INFO("Received a DAO from ");
   LOG_INFO_6ADDR(&UIP_IP_BUF->srcipaddr);
   LOG_INFO_("\n");
+
+  if(uip_len <= uip_l3_icmp_hdr_len) {
+    LOG_WARN("Ignoring DAO ICMPv6 message without DAO header\n");
+    goto discard;
+  }
 
   instance_id = UIP_ICMP_PAYLOAD[0];
   instance = rpl_get_instance(instance_id);

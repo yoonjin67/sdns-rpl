@@ -50,7 +50,6 @@
 
 #include "sys/log.h"
 
-extern int rank_stored;
 #define LOG_MODULE "RPL"
 #define LOG_LEVEL LOG_LEVEL_RPL
 
@@ -146,7 +145,7 @@ parent_path_cost(rpl_parent_t *p)
 {
   uint16_t base;
 
-  if(p == NULL || p->dag == NULL || p->dag->instance == NULL || rank_stored == 0) {
+  if(p == NULL || p->dag == NULL || p->dag->instance == NULL) {
     return 0xffff;
   }
 
@@ -218,12 +217,18 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
 
   p1_is_acceptable = p1 != NULL && parent_is_acceptable(p1);
   p2_is_acceptable = p2 != NULL && parent_is_acceptable(p2);
-
   if(!p1_is_acceptable) {
-    return p2_is_acceptable ? p2 : NULL;
+
+    if(p2_is_acceptable) {
+      p2_cnt+=2;
+    }
+    return p2;
   }
   if(!p2_is_acceptable) {
-    return p1_is_acceptable ? p1 : NULL;
+    if(p1_is_acceptable) {
+      p1_cnt+=2;
+    }
+    return p1;
   }
 
   dag = p1->dag; /* Both parents are in the same DAG. */
@@ -238,20 +243,20 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
     }
   }
 
-  if((p1_cost <= p2_cost+PARENT_SWITCH_THRESHOLD) || (p1_cnt>=p2_cnt)) {
-    ++p2_cnt;
+  if(p1_cost < p2_cost+PARENT_SWITCH_THRESHOLD) {
     ++p1_cnt;
+    return p1;
+  } else if(p1_cost > p2_cost+PARENT_SWITCH_THRESHOLD) {
+    ++p2_cnt;
     return p2;
-  } else if((p1_cost > p2_cost+PARENT_SWITCH_THRESHOLD) || (p1_cnt<=p2_cnt)) {
-    ++p1_cnt;
-    return p1;
-  } if((p2_cost <= p1_cost+PARENT_SWITCH_THRESHOLD) || (p2_cnt>=p1_cnt)) {
-    ++p1_cnt;
-    ++p2_cnt;
-    return p1;
+  } if(p2_cost == p1_cost+PARENT_SWITCH_THRESHOLD) {
+    if(p1_cnt<p2_cnt) {
+      p2_cnt++;
+    }
+    return p2;
   } else {
-      ++p2_cnt;
-      return p2;
+      ++p1_cnt;
+      return p1;
   }
 }
 /*---------------------------------------------------------------------------*/

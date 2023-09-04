@@ -39,7 +39,6 @@
  * \addtogroup uip
  * @{
  */
-extern int rank_stored;
 
 #include "net/ipv6/uip.h"
 #include "net/ipv6/tcpip.h"
@@ -56,6 +55,7 @@ extern int rank_stored;
 #include <limits.h>
 #include <string.h>
 
+extern int rank_stored;
 #define LOG_MODULE "RPL"
 #define LOG_LEVEL LOG_LEVEL_RPL
 
@@ -442,8 +442,8 @@ rpl_is_in_leaf_mode(void)
    * makes decision about the leaf status based on the preprocessor
    * flag. For consistency, do the same here.
    */
-  if(rank_stored==65535) {
-      return 0;
+  if(rank_stored) {
+    return 0;
   }
   return RPL_LEAF_ONLY ? 1 : 0;
 }
