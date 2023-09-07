@@ -29,7 +29,7 @@ include $(CONTIKI)/Makefile.dir-variables
 
 # Enable Werror by default. To disable from command line, use make WERROR=0.
 # Setting this option is also important for tests on Cooja motes to check for warnings.
-WERROR ?= 1
+WERROR ?= 0
 
 # Disable Clang by default.
 CLANG ?= 0

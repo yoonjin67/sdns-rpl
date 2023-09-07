@@ -251,12 +251,12 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
     return p2;
   } if(p2_cost == p1_cost+PARENT_SWITCH_THRESHOLD) {
     if(p1_cnt<p2_cnt) {
-      p2_cnt++;
+      p1_cnt++;
     }
-    return p2;
+    return p1;
   } else {
-      ++p1_cnt;
-      return p1;
+      ++p2_cnt;
+      return p2;
   }
 }
 /*---------------------------------------------------------------------------*/

@@ -8,7 +8,7 @@
       org.contikios.cooja.radiomediums.UDGM
       <transmitting_range>50.0</transmitting_range>
       <interference_range>50.0</interference_range>
-      <success_ratio_tx>0.8</success_ratio_tx>
+      <success_ratio_tx>0.55</success_ratio_tx>
       <success_ratio_rx>0.8</success_ratio_rx>
     </radiomedium>
     <events>
@@ -324,7 +324,7 @@ make -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <skin>org.contikios.cooja.plugins.skins.MoteTypeVisualizerSkin</skin>
       <viewport>1.11640438045691 0.0 0.0 1.11640438045691 158.53124095268927 88.10295647649362</viewport>
     </plugin_config>
-    <bounds x="1" y="1" height="400" width="400" z="2" />
+    <bounds x="1" y="1" height="400" width="400" z="1" />
   </plugin>
   <plugin>
     org.contikios.cooja.plugins.LogListener
@@ -333,7 +333,7 @@ make -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <formatted_time />
       <coloring />
     </plugin_config>
-    <bounds x="455" y="506" height="500" width="1184" z="4" />
+    <bounds x="455" y="506" height="500" width="1184" z="5" />
   </plugin>
   <plugin>
     org.contikios.cooja.plugins.Notes
@@ -341,7 +341,7 @@ make -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <notes>Enter notes here</notes>
       <decorations>true</decorations>
     </plugin_config>
-    <bounds x="680" y="0" height="160" width="904" z="5" />
+    <bounds x="680" y="0" height="160" width="904" z="3" />
   </plugin>
   <plugin>
     org.contikios.cooja.plugins.ScriptRunner
@@ -446,7 +446,7 @@ while(true) {&#xD;
 }</script>
       <active>true</active>
     </plugin_config>
-    <bounds x="953" y="43" height="726" width="612" z="3" />
+    <bounds x="953" y="43" height="726" width="612" z="4" />
   </plugin>
   <plugin>
     org.contikios.cooja.plugins.RadioLogger
@@ -455,6 +455,6 @@ while(true) {&#xD;
       <formatted_time />
       <analyzers name="6lowpan-pcap" />
     </plugin_config>
-    <bounds x="439" y="195" height="300" width="500" z="8" />
+    <bounds x="439" y="195" height="300" width="500" z="2" />
   </plugin>
 </simconf>
