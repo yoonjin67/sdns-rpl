@@ -1670,10 +1670,11 @@ rpl_process_dio(uip_ipaddr_t *from, rpl_dio_t *dio)
 #if RPL_WITH_MC
   memcpy(&p->mc, &dio->mc, sizeof(p->mc));
 #endif /* RPL_WITH_MC */
-  if(rpl_process_parent_event(instance, p) == 0) {
-    LOG_WARN("The candidate parent is rejected\n");
-    return;
-  }
+//   if(rpl_process_parent_event(instance, p) == 0) {
+//     LOG_WARN("The candidate parent is rejected\n");
+//   return;
+//  }
+//  supress ichof error
 
   /* We don't use route control, so we can have only one official parent. */
   if(dag->joined && p == dag->preferred_parent) {
