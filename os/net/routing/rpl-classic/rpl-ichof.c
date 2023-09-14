@@ -345,7 +345,7 @@ rpl_of_t rpl_ichof = {
   best_parent,
   best_dag,
   update_metric_container,
-  RPL_OCP_MRHOF
+  RPL_OCP_ICHOF
 };
 
 /** @}*/
