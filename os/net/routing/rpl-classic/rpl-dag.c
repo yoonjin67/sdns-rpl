@@ -1438,7 +1438,6 @@ rpl_process_parent_event(rpl_instance_t *instance, rpl_parent_t *p)
              (unsigned)p->rank,
              p->dag->min_rank, p->dag->instance->max_rankinc);
              rank_stored = p->rank;
-    rpl_nullify_parent(p);
     if(p != instance->current_dag->preferred_parent) {
       return 0;
     } else {
