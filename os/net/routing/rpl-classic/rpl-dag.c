@@ -58,6 +58,7 @@
 #include <limits.h>
 #include <string.h>
 
+extern uint16_t parent_stored_rank;
 #define LOG_MODULE "RPL"
 #define LOG_LEVEL LOG_LEVEL_RPL
 int rank_stored;
@@ -835,7 +836,7 @@ rpl_select_dag(rpl_instance_t *instance, rpl_parent_t *p)
     best_dag->min_rank = best_dag->rank;
   }
 
-  if(!acceptable_rank(best_dag, best_dag->rank)) {
+  if(!acceptable_rank(best_dag, best_dag->rank) && !parent_stored_rank) {
     LOG_WARN("New rank unacceptable!\n");
     rpl_set_preferred_parent(instance->current_dag, NULL);
     if(RPL_IS_STORING(instance) && last_parent != NULL) {

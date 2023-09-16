@@ -220,13 +220,13 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   if(!p1_is_acceptable) {
 
     if(p2_is_acceptable) {
-      p2_cnt+=4;
+      p1_cnt+=4;
     }
     return p2;
   }
   if(!p2_is_acceptable) {
     if(p1_is_acceptable) {
-      p1_cnt+=4;
+      p2_cnt+=4;
     }
     return p1;
   }
