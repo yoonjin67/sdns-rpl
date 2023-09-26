@@ -442,10 +442,7 @@ rpl_is_in_leaf_mode(void)
    * makes decision about the leaf status based on the preprocessor
    * flag. For consistency, do the same here.
    */
-  if(rank_stored) {
     return 0;
-  }
-  return RPL_LEAF_ONLY ? 1 : 0;
 }
 /*---------------------------------------------------------------------------*/
 const struct routing_driver rpl_classic_driver = {
