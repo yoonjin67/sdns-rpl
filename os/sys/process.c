@@ -60,9 +60,9 @@ static process_event_t lastevent;
  * Structure used for keeping the queue of active events.
  */
 struct event_data {
-  process_event_t ev;
   process_data_t data;
   struct process *p;
+  process_event_t ev;
 };
 
 static process_num_events_t nevents, fevent;
@@ -137,18 +137,6 @@ exit_process(struct process *p, const struct process *fromprocess)
 
   if(process_is_running(p)) {
     /* Process was running */
-    p->state = PROCESS_STATE_NONE;
-
-    /*
-     * Post a synchronous event to all processes to inform them that
-     * this process is about to exit. This will allow services to
-     * deallocate state associated with this process.
-     */
-    for(q = process_list; q != NULL; q = q->next) {
-      if(p != q) {
-        call_process(q, PROCESS_EVENT_EXITED, (process_data_t)p);
-      }
-    }
 
     if(p->thread != NULL && p != fromprocess) {
       /* Post the exit event to the process that is about to exit. */
@@ -165,6 +153,20 @@ exit_process(struct process *p, const struct process *fromprocess)
         q->next = p->next;
         break;
       }
+    }
+  }
+
+  if(process_is_running(p)) {
+    /* Process was running */
+    p->state = PROCESS_STATE_NONE;
+
+    /*
+     * Post a synchronous event to all processes to inform them that
+     * this process is about to exit. This will allow services to
+     * deallocate state associated with this process.
+     */
+    for(q = process_list; q != NULL; q = q->next) {
+        call_process(q, PROCESS_EVENT_EXITED, (process_data_t)p);
     }
   }
 

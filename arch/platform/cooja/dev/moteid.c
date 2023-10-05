@@ -31,8 +31,8 @@
 #include "dev/moteid.h"
 #include "lib/simEnvChange.h"
 #include "lib/random.h"
-
-const struct simInterface moteid_interface;
+#include "lib/csprng.h"
+#include <string.h>
 
 // COOJA variables
 int simMoteID;
@@ -44,17 +44,15 @@ static void
 doInterfaceActionsBeforeTick(void)
 {
   if (simMoteIDChanged) {
+    struct csprng_seed csprng_seed = { 0 };
+
     simMoteIDChanged = 0;
-	random_init(simRandomSeed);
+    random_init(simRandomSeed);
+    memcpy(csprng_seed.u8,
+        &simRandomSeed,
+        MIN(sizeof(simRandomSeed), sizeof(csprng_seed.u8)));
+    csprng_feed(&csprng_seed);
   }
 }
 /*-----------------------------------------------------------------------------------*/
-static void
-doInterfaceActionsAfterTick(void)
-{
-}
-/*-----------------------------------------------------------------------------------*/
-
-SIM_INTERFACE(moteid_interface,
-	      doInterfaceActionsBeforeTick,
-	      doInterfaceActionsAfterTick);
+COOJA_PRE_TICK_ACTION(COOJA_MOTEID_INIT_PRIO, doInterfaceActionsBeforeTick);

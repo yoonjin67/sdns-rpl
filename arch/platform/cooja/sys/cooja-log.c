@@ -28,16 +28,19 @@
  *
  */
 
+#define _GNU_SOURCE /* For vasprintf. */
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdlib.h>
 #include <string.h>
-#include "lib/simEnvChange.h"
 
 #ifndef MAX_LOG_LENGTH
 #define MAX_LOG_LENGTH 8192
 #endif /* MAX_LOG_LENGTH */
 
-const struct simInterface simlog_interface;
+#ifndef COOJA_LOG_WITH_SLIP
+#define COOJA_LOG_WITH_SLIP 0
+#endif /* COOJA_LOG_WITH_SLIP */
 
 /* Variables shared between COOJA and Contiki */
 char simLoggedData[MAX_LOG_LENGTH];
@@ -45,17 +48,18 @@ int simLoggedLength;
 char simLoggedFlag;
 
 /*-----------------------------------------------------------------------------------*/
-void
+int
 simlog_char(char c)
 {
   if (simLoggedLength + 1 > MAX_LOG_LENGTH) {
     /* Dropping message due to buffer overflow */
-    return;
+    return EOF;
   }
 
   simLoggedData[simLoggedLength] = c;
   simLoggedLength += 1;
   simLoggedFlag = 1;
+  return c;
 }
 /*-----------------------------------------------------------------------------------*/
 void
@@ -79,17 +83,7 @@ log_message(const char *part1, const char *part2)
   simlog(part2);
 }
 /*-----------------------------------------------------------------------------------*/
-static void
-doInterfaceActionsBeforeTick(void)
-{
-}
-/*-----------------------------------------------------------------------------------*/
-static void
-doInterfaceActionsAfterTick(void)
-{
-}
-/*-----------------------------------------------------------------------------------*/
-static int log_putchar_with_slip;
+static int log_putchar_with_slip = COOJA_LOG_WITH_SLIP != 0;
 void
 log_set_putchar_with_slip(int with)
 {
@@ -103,8 +97,6 @@ dbg_putchar(int c)
   static char debug_frame = 0;
 
   if(log_putchar_with_slip) {
-    simlog_char(SLIP_END);
-
     if(!debug_frame) {		/* Start of debug output */
       simlog_char(SLIP_END);
       simlog_char('\r');	/* Type debug line == '\r' */
@@ -127,17 +119,36 @@ dbg_putchar(int c)
   return c;
 }
 /*-----------------------------------------------------------------------------------*/
-unsigned int
-dbg_send_bytes(const unsigned char *s, unsigned int len)
+#ifndef __APPLE__
+extern int __wrap_putchar(int c) __attribute__((alias("putchar")));
+extern int __wrap_puts(const char *str) __attribute__((nonnull, alias("puts")));
+extern int __wrap_printf(const char *fmt, ...) __attribute__((nonnull, alias("printf")));
+#endif
+/*---------------------------------------------------------------------------*/
+int
+putchar(int c)
 {
-  unsigned int i;
-  for(i = 0; i < len && s && *s != 0; i++) {
-    putchar(*s++);
-  }
-  return i;
+  return simlog_char(c);
 }
-/*-----------------------------------------------------------------------------------*/
-
-SIM_INTERFACE(simlog_interface,
-          doInterfaceActionsBeforeTick,
-          doInterfaceActionsAfterTick);
+/*---------------------------------------------------------------------------*/
+int
+puts(const char* s)
+{
+  simlog(s);
+  return simlog_char('\n');
+}
+/*---------------------------------------------------------------------------*/
+int
+printf(const char *fmt, ...)
+{
+  va_list ap;
+  va_start(ap, fmt);
+  char *buf;
+  int res = vasprintf(&buf, fmt, ap);
+  va_end(ap);
+  if(res > 0) {
+    simlog(buf);
+    free(buf);
+  }
+  return res;
+}

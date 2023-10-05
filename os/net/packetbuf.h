@@ -203,12 +203,6 @@ struct packetbuf_addr {
   linkaddr_t addr;
 };
 
-#define PACKETBUF_ATTR_PACKET_TYPE_DATA      0
-#define PACKETBUF_ATTR_PACKET_TYPE_ACK       1
-#define PACKETBUF_ATTR_PACKET_TYPE_STREAM    2
-#define PACKETBUF_ATTR_PACKET_TYPE_STREAM_END 3
-#define PACKETBUF_ATTR_PACKET_TYPE_TIMESTAMP 4
-
 enum {
   PACKETBUF_ATTR_NONE,
 
@@ -258,9 +252,9 @@ enum {
 
 #define PACKETBUF_IS_ADDR(type) ((type) >= PACKETBUF_ADDR_FIRST)
 
-int               packetbuf_set_attr(uint8_t type, const packetbuf_attr_t val);
+void              packetbuf_set_attr(uint8_t type, const packetbuf_attr_t val);
 packetbuf_attr_t packetbuf_attr(uint8_t type);
-int               packetbuf_set_addr(uint8_t type, const linkaddr_t *addr);
+void              packetbuf_set_addr(uint8_t type, const linkaddr_t *addr);
 const linkaddr_t *packetbuf_addr(uint8_t type);
 
 /**

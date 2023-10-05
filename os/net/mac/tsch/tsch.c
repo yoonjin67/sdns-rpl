@@ -481,7 +481,8 @@ eb_input(struct input_packet *current_input)
 
             LOG_WARN("Updating TSCH hopping sequence from EB\n");
           } else {
-            LOG_WARN("TSCH:! parse_eb: hopping sequence too long (%u)\n", eb_ies.ie_hopping_sequence_len);
+            LOG_WARN("parse_eb: Hopping sequence too long (%u)\n",
+                     eb_ies.ie_hopping_sequence_len);
           }
         }
       }
@@ -947,7 +948,7 @@ PROCESS_THREAD(tsch_send_eb_process, ev, data)
         if(!(p = tsch_queue_add_packet(&tsch_eb_address, 1, NULL, NULL))) {
           LOG_ERR("! could not enqueue EB packet\n");
         } else {
-          LOG_INFO("TSCH: enqueue EB packet %u %u\n",
+          LOG_INFO("Enqueuing EB packet %u %u\n",
                    packetbuf_totlen(), packetbuf_hdrlen());
           p->tsch_sync_ie_offset = tsch_sync_ie_offset;
           p->header_len = hdr_len;
@@ -999,11 +1000,13 @@ tsch_init(void)
 
   rtimer_clock_t t;
 
+#if TSCH_DYNAMIC_TIMESLOT_TEMPLATE
   /* Check that the platform provides a TSCH timeslot timing template */
   if(TSCH_DEFAULT_TIMESLOT_TIMING == NULL) {
     LOG_ERR("! platform does not provide a timeslot timing template.\n");
     return;
   }
+#endif
 
   /* Check that the radio can correctly report its max supported payload */
   if(NETSTACK_RADIO.get_value(RADIO_CONST_MAX_PAYLOAD_LEN, &radio_max_payload_len) != RADIO_RESULT_OK) {
