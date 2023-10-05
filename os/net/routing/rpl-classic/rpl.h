@@ -86,6 +86,7 @@ typedef uint16_t rpl_ocp_t;
 
 /* IANA Objective Code Point as defined in RFC6550. */
 #define RPL_OCP_OF0     0
+#define RPL_OCP_ICHOF   2
 #define RPL_OCP_MRHOF   1
 
 struct rpl_metric_object_energy {

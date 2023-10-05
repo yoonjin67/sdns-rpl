@@ -104,18 +104,18 @@
 #ifdef RPL_CONF_OF_OCP
 #define RPL_OF_OCP RPL_CONF_OF_OCP
 #else /* RPL_CONF_OF_OCP */
-#define RPL_OF_OCP RPL_OCP_MRHOF
+#define RPL_OF_OCP RPL_OCP_ICHOF
 #endif /* RPL_CONF_OF_OCP */
 
 /*
  * The set of objective functions supported at runtime. Nodes are only
  * able to join instances that advertise an OF in this set. To include
- * both OF0 and MRHOF, use {&rpl_of0, &rpl_mrhof}.
+ * both OF0 and MRHOF, use {&rpl_of0, &rpl_of0}.
  */
 #ifdef RPL_CONF_SUPPORTED_OFS
 #define RPL_SUPPORTED_OFS RPL_CONF_SUPPORTED_OFS
 #else /* RPL_CONF_SUPPORTED_OFS */
-#define RPL_SUPPORTED_OFS {&rpl_mrhof}
+#define RPL_SUPPORTED_OFS {&rpl_of0, &rpl_ichof, &rpl_mrhof}
 #endif /* RPL_CONF_SUPPORTED_OFS */
 
 /*

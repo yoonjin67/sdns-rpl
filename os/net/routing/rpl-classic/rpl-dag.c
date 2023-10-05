@@ -58,10 +58,8 @@
 #include <limits.h>
 #include <string.h>
 
-extern uint16_t parent_stored_rank;
 #define LOG_MODULE "RPL"
 #define LOG_LEVEL LOG_LEVEL_RPL
-int rank_stored;
 
 /* A configurable function called after every RPL parent switch. */
 #ifdef RPL_CALLBACK_PARENT_SWITCH
@@ -69,7 +67,7 @@ void RPL_CALLBACK_PARENT_SWITCH(rpl_parent_t *old, rpl_parent_t *new);
 #endif /* RPL_CALLBACK_PARENT_SWITCH */
 
 /*---------------------------------------------------------------------------*/
-extern rpl_of_t rpl_of0, rpl_mrhof;
+extern rpl_of_t rpl_of0, rpl_mrhof, rpl_ichof;
 static rpl_of_t *const objective_functions[] = RPL_SUPPORTED_OFS;
 
 /*---------------------------------------------------------------------------*/
@@ -836,7 +834,7 @@ rpl_select_dag(rpl_instance_t *instance, rpl_parent_t *p)
     best_dag->min_rank = best_dag->rank;
   }
 
-  if(!acceptable_rank(best_dag, best_dag->rank) && !parent_stored_rank) {
+  if(!acceptable_rank(best_dag, best_dag->rank)) {
     LOG_WARN("New rank unacceptable!\n");
     rpl_set_preferred_parent(instance->current_dag, NULL);
     if(RPL_IS_STORING(instance) && last_parent != NULL) {
@@ -1438,7 +1436,7 @@ rpl_process_parent_event(rpl_instance_t *instance, rpl_parent_t *p)
     LOG_WARN("Unacceptable rank %u (Current min %u, MaxRankInc %u)\n",
              (unsigned)p->rank,
              p->dag->min_rank, p->dag->instance->max_rankinc);
-             rank_stored = p->rank;
+    rpl_nullify_parent(p);
     if(p != instance->current_dag->preferred_parent) {
       return 0;
     } else {
@@ -1670,11 +1668,10 @@ rpl_process_dio(uip_ipaddr_t *from, rpl_dio_t *dio)
 #if RPL_WITH_MC
   memcpy(&p->mc, &dio->mc, sizeof(p->mc));
 #endif /* RPL_WITH_MC */
-//   if(rpl_process_parent_event(instance, p) == 0) {
-//     LOG_WARN("The candidate parent is rejected\n");
-//   return;
-//  }
-//  supress ichof error
+  if(rpl_process_parent_event(instance, p) == 0) {
+    LOG_WARN("The candidate parent is rejected\n");
+    return;
+  }
 
   /* We don't use route control, so we can have only one official parent. */
   if(dag->joined && p == dag->preferred_parent) {

@@ -67,10 +67,7 @@
 #define RPL_DIO_MOP_MASK                 0x38
 #define RPL_DIO_PREFERENCE_MASK          0x07
 
-uint16_t parent_stored_rank=65535;
 /*---------------------------------------------------------------------------*/
-
-
 static void dis_input(void);
 static void dio_input(void);
 static void dao_input(void);
@@ -736,14 +733,9 @@ dao_input_storing(void)
        DAG_RANK(parent->rank, instance) < DAG_RANK(dag->rank, instance)) {
       LOG_WARN("Loop detected when receiving a unicast DAO from a node with a lower rank! (%u < %u)\n",
                DAG_RANK(parent->rank, instance), DAG_RANK(dag->rank, instance));
-      if(parent_stored_rank!=parent->rank) {
-        parent->rank = RPL_INFINITE_RANK;
-        parent->flags |= RPL_PARENT_FLAG_UPDATED;
-        parent_stored_rank = parent->rank;
-        return;
-      } else {
-        parent_stored_rank = 0;
-      }
+      parent->rank = RPL_INFINITE_RANK;
+      parent->flags |= RPL_PARENT_FLAG_UPDATED;
+      return;
     }
 
     /* If we get the DAO from our parent, we also have a loop. */
