@@ -57,6 +57,9 @@
 #define MIN_STEP_OF_RANK   1
 #define MAX_STEP_OF_RANK   9
 
+#define MOD INT32_MAX;
+#define CHY 500000
+#define BAIL 1000
 /*
  * OF0 computes rank increase as follows:
  *
@@ -169,8 +172,6 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   rpl_dag_t *dag;
   uint16_t p1_cost;
   uint16_t p2_cost;
-  static uint16_t p1_cnt=0;
-  static uint16_t p2_cnt=0;
   int p1_is_acceptable;
   int p2_is_acceptable;
 
@@ -178,14 +179,12 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   p2_is_acceptable = p2 != NULL && parent_is_acceptable(p2);
   if(!p1_is_acceptable) {
 
-    if(p2_is_acceptable) {
-      return p2;
-    }
+    p2->cnt=!p2_is_acceptable?p2->cnt:p2->cnt-BAIL;
+    return p2;
   }
   if(!p2_is_acceptable) {
-    if(p1_is_acceptable) {
-      return p1;
-    }
+    p1->cnt=!p1_is_acceptable?p1->cnt:p1->cnt-BAIL;
+    return p1;
   }
 
 
@@ -195,18 +194,22 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   p2_cost = parent_path_cost(p2);
 
   if(p1_cost < p2_cost) {
-    ++p1_cnt;
-      if(p2_cnt) {
-        p2_cnt--;
-      }
+    ++p1->cnt;
     return p1;
   } else if(p1_cost > p2_cost) {
-      if(p1_cnt) {
-        p1_cnt--;
-      }
-    ++p2_cnt;
+    ++p2->cnt;
     return p2;
+  } else {
+    if(p1->cnt+CHY<p2->cnt) {
+      p1->cnt++;
+      return p1;
+    } else if(p2->cnt+CHY<p1->cnt) {
+      return p2;
+    }
   }
+
+  p1->cnt%=MOD;
+  p2->cnt%=MOD;
 
   /* Coarse-grained path costs (multiple of min_hoprankinc), we
      operate without hysteresis. */

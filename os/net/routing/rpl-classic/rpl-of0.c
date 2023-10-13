@@ -48,7 +48,6 @@
 
 #define LOG_MODULE "RPL"
 #define LOG_LEVEL LOG_LEVEL_RPL
-#define RPL_HOP_THRESHOLD 0
 
 /* Constants from RFC6552. We use the default values. */
 #define RANK_STRETCH       0 /* Must be in the range [0;5] */
@@ -162,38 +161,24 @@ parent_has_usable_link(rpl_parent_t *p)
   return parent_is_acceptable(p);
 }
 /*---------------------------------------------------------------------------*/
-uint16_t max(uint16_t c1, uint16_t c2) {
-  return c1>c2?c1:c2;
-}
 static rpl_parent_t *
 best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
 {
   rpl_dag_t *dag;
   uint16_t p1_cost;
   uint16_t p2_cost;
-  static uint16_t p1_cnt=0;
-  static uint16_t p2_cnt=0;
-  static uint16_t retain=0;
   int p1_is_acceptable;
   int p2_is_acceptable;
 
   p1_is_acceptable = p1 != NULL && parent_is_acceptable(p1);
   p2_is_acceptable = p2 != NULL && parent_is_acceptable(p2);
-  if(!p1_is_acceptable) {
 
-    if(p2_is_acceptable) {
-      p1_cnt+=6
-      return p2;
-    }
+  if(!p1_is_acceptable) {
+    return p2_is_acceptable ? p2 : NULL;
   }
   if(!p2_is_acceptable) {
-    if(p1_is_acceptable) {
-      p2_cnt+=6;
-      return p1;
-    }
+    return p1_is_acceptable ? p1 : NULL;
   }
-
-
 
   dag = p1->dag; /* Both parents are in the same DAG. */
   p1_cost = parent_path_cost(p1);
@@ -204,40 +189,14 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   if(p1_cost != p2_cost) {
     /* Pick parent with lowest path cost */
     return p1_cost < p2_cost ? p1 : p2;
-  } 
-  else if (parent_link_metric(p1)!=parent_link_metric(p2)) {
-	  return parent_link_metric(p1) < parent_link_metric(p2) ? p1 : p2;
-  }
-  /* We have a tie! Stick to the current preferred parent if possible. */
-  if(p1 == dag->preferred_parent || p2 == dag->preferred_parent) {
-    retain++;
-    if(retain<max(p1_cnt,p2_cnt)) {
+  } else {
+    /* We have a tie! Stick to the current preferred parent if possible. */
+    if(p1 == dag->preferred_parent || p2 == dag->preferred_parent) {
       return dag->preferred_parent;
     }
-  }
-  /* None of the nodes is the current preferred parent; choose the
-     parent with best link metric. */
-
-  if(p1_cost < p2_cost) {
-    ++p1_cnt;
-    return p1;
-  } else if(p1_cost > p2_cost) {
-    ++p2_cnt;
-    return p2;
-  } if(p2_cost == p1_cost) {
-  if(p1_cnt<p2_cnt) {
-    p1_cnt++;
-    return p1;
-    } else if(p1_cnt>p2_cnt) {
-      p1_cnt++;
-      return p1;
-    } else {
-      p2_cnt++;
-      return p2;
-    }
-  } else {
-      ++p2_cnt;
-      return p2;
+    /* None of the nodes is the current preferred parent; choose the
+       parent with best link metric. */
+    return parent_link_metric(p1) < parent_link_metric(p2) ? p1 : p2;
   }
 }
 /*---------------------------------------------------------------------------*/

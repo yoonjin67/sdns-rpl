@@ -257,7 +257,6 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
       return p2;
     }
   }
-  ++p1->cnt;
   p1->cnt%=MOD;
   p2->cnt%=MOD;
   return dag->preferred_parent;
