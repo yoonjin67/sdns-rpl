@@ -83,6 +83,7 @@
    maps ETX to a step between 1 and 9 works. */
 #define STEP_OF_RANK(p)       (((3 * parent_link_metric(p)) / LINK_STATS_ETX_DIVISOR) - 2)
 #endif /* RPL_OF0_SR */
+extern uint16_t max(uint16_t c1, uint16_t c2);
 
 /*---------------------------------------------------------------------------*/
 static void
@@ -162,9 +163,6 @@ parent_has_usable_link(rpl_parent_t *p)
   return parent_is_acceptable(p);
 }
 /*---------------------------------------------------------------------------*/
-uint16_t max(uint16_t c1, uint16_t c2) {
-  return c1>c2?c1:c2;
-}
 static rpl_parent_t *
 best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
 {
@@ -173,7 +171,6 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   uint16_t p2_cost;
   static uint16_t p1_cnt=0;
   static uint16_t p2_cnt=0;
-  static uint16_t retain=0;
   int p1_is_acceptable;
   int p2_is_acceptable;
 
@@ -182,13 +179,11 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   if(!p1_is_acceptable) {
 
     if(p2_is_acceptable) {
-      p1_cnt+=6
       return p2;
     }
   }
   if(!p2_is_acceptable) {
     if(p1_is_acceptable) {
-      p2_cnt+=6;
       return p1;
     }
   }
@@ -199,46 +194,29 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   p1_cost = parent_path_cost(p1);
   p2_cost = parent_path_cost(p2);
 
-  /* Coarse-grained path costs (multiple of min_hoprankinc), we
-     operate without hysteresis. */
-  if(p1_cost != p2_cost) {
-    /* Pick parent with lowest path cost */
-    return p1_cost < p2_cost ? p1 : p2;
-  } 
-  else if (parent_link_metric(p1)!=parent_link_metric(p2)) {
-	  return parent_link_metric(p1) < parent_link_metric(p2) ? p1 : p2;
-  }
-  /* We have a tie! Stick to the current preferred parent if possible. */
-  if(p1 == dag->preferred_parent || p2 == dag->preferred_parent) {
-    retain++;
-    if(retain<max(p1_cnt,p2_cnt)) {
-      return dag->preferred_parent;
-    }
-  }
-  /* None of the nodes is the current preferred parent; choose the
-     parent with best link metric. */
-
   if(p1_cost < p2_cost) {
     ++p1_cnt;
+      if(p2_cnt) {
+        p2_cnt--;
+      }
     return p1;
   } else if(p1_cost > p2_cost) {
+      if(p1_cnt) {
+        p1_cnt--;
+      }
     ++p2_cnt;
     return p2;
-  } if(p2_cost == p1_cost) {
-  if(p1_cnt<p2_cnt) {
-    p1_cnt++;
-    return p1;
-    } else if(p1_cnt>p2_cnt) {
-      p1_cnt++;
-      return p1;
-    } else {
-      p2_cnt++;
-      return p2;
-    }
-  } else {
-      ++p2_cnt;
-      return p2;
   }
+
+  /* Coarse-grained path costs (multiple of min_hoprankinc), we
+     operate without hysteresis. */
+  /* We have a tie! Stick to the current preferred parent if possible. */
+  if(p1 == dag->preferred_parent || p2 == dag->preferred_parent) {
+    return dag->preferred_parent;
+  }
+  return parent_link_metric(p1) < parent_link_metric(p2) ? p1 : p2;
+  /* None of the nodes is the current preferred parent; choose the
+     parent with best link metric. */
 }
 /*---------------------------------------------------------------------------*/
 static rpl_dag_t *
@@ -261,7 +239,7 @@ update_metric_container(rpl_instance_t *instance)
   instance->mc.type = RPL_DAG_MC_NONE;
 }
 /*---------------------------------------------------------------------------*/
-rpl_of_t rpl_of0 = {
+rpl_of_t rpl_ofB = {
   reset,
 #if RPL_WITH_DAO_ACK
   dao_ack_callback,
@@ -273,7 +251,7 @@ rpl_of_t rpl_of0 = {
   best_parent,
   best_dag,
   update_metric_container,
-  RPL_OCP_OF0
+  RPL_OCP_OFB
 };
 
 /** @}*/

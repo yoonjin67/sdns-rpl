@@ -48,10 +48,14 @@
 #include "net/nbr-table.h"
 #include "net/link-stats.h"
 
+#include <limits.h>
 #include "sys/log.h"
 
 #define LOG_MODULE "RPL"
+#define MOD INT32_MAX;
+#define CHY 500000
 #define LOG_LEVEL LOG_LEVEL_RPL
+#define BAIL 1000
 
 /*
  * RFC6551 and RFC6719 do not mandate the use of a specific formula to
@@ -204,30 +208,26 @@ parent_has_usable_link(rpl_parent_t *p)
   return link_metric <= MAX_LINK_METRIC;
 }
 /*---------------------------------------------------------------------------*/
+uint16_t max(uint16_t c1, uint16_t c2) {
+  return c1>c2?c1:c2;
+}
 static rpl_parent_t *
 best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
 {
   rpl_dag_t *dag;
   uint16_t p1_cost;
   uint16_t p2_cost;
-  static uint16_t p1_cnt = 0;
-  static uint16_t p2_cnt = 0;
   int p1_is_acceptable;
   int p2_is_acceptable;
 
   p1_is_acceptable = p1 != NULL && parent_is_acceptable(p1);
   p2_is_acceptable = p2 != NULL && parent_is_acceptable(p2);
   if(!p1_is_acceptable) {
-
-    if(p2_is_acceptable) {
-      p1_cnt+=4;
-    }
+    p2->cnt=!p2_is_acceptable?p2->cnt:p2->cnt-BAIL;
     return p2;
   }
   if(!p2_is_acceptable) {
-    if(p1_is_acceptable) {
-      p2_cnt+=4;
-    }
+    p1->cnt=!p1_is_acceptable?p1->cnt:p1->cnt-BAIL;
     return p1;
   }
 
@@ -239,39 +239,28 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   if(p1 == dag->preferred_parent || p2 == dag->preferred_parent) {
     if(p1_cost < p2_cost + PARENT_SWITCH_THRESHOLD &&
        p1_cost > p2_cost - PARENT_SWITCH_THRESHOLD) {
-      return dag->preferred_parent;
+       return dag->preferred_parent;
     }
   }
 
   if(p1_cost < p2_cost+PARENT_SWITCH_THRESHOLD) {
-    ++p1_cnt;
-      if(p2_cnt) {
-        p2_cnt--;
-      }
+    ++p1->cnt;
     return p1;
   } else if(p1_cost > p2_cost+PARENT_SWITCH_THRESHOLD) {
-      if(p1_cnt) {
-        p1_cnt--;
-      }
-    ++p2_cnt;
+    ++p2->cnt;
     return p2;
-  } if(p2_cost == p1_cost+PARENT_SWITCH_THRESHOLD) {
-    if(p1_cnt<p2_cnt) {
-      if(p2_cnt) {
-        p2_cnt--;
-      }
-      p1_cnt++;
+  } else {
+    if(p1->cnt+CHY<p2->cnt) {
+      p1->cnt++;
       return p1;
-    } else {
+    } else if(p2->cnt+CHY<p2->cnt){
       return p2;
     }
-  } else {
-      if(p2_cnt) {
-        ++p2_cnt;
-      }
-      --p1_cnt;
-      return p2;
   }
+  ++p1->cnt;
+  p1->cnt%=MOD;
+  p2->cnt%=MOD;
+  return dag->preferred_parent;
 }
 /*---------------------------------------------------------------------------*/
 static rpl_dag_t *
