@@ -56,20 +56,6 @@
 #include "dev/gpio.h"
 #include "dev/nvic.h"
 /*---------------------------------------------------------------------------*/
-/**
- * \name Serial Boot Loader Backdoor configuration
- *
- * @{
- */
-#ifndef FLASH_CCA_CONF_BOOTLDR_BACKDOOR_PORT_A_PIN
-#define FLASH_CCA_CONF_BOOTLDR_BACKDOOR_PORT_A_PIN 7 /**< Pin PA7 activates the boot loader */
-#endif
-
-#ifndef FLASH_CCA_CONF_BOOTLDR_BACKDOOR_ACTIVE_HIGH
-#define FLASH_CCA_CONF_BOOTLDR_BACKDOOR_ACTIVE_HIGH 0 /**< A logic low level activates the boot loader */
-#endif
-/** @} */
-/*---------------------------------------------------------------------------*/
 /** \name OpenMote-B LED configuration
  *
  * LEDs on the OpenMote-B are connected as follows:
@@ -181,7 +167,7 @@
 #define I2C_SCL_PORT             GPIO_B_NUM
 #define I2C_SCL_PIN              5
 #define I2C_SDA_PORT             GPIO_B_NUM
-#define I2C_SDA_PIN              4
+#define I2C_SDA_PIN              5
 /** @} */
 /*---------------------------------------------------------------------------*/
 /**
@@ -189,9 +175,9 @@
  *
  * @{
  */
-#define ANTENNA_BSP_RADIO_BASE   GPIO_PORT_TO_BASE(GPIO_D_NUM)
-#define ANTENNA_BSP_RADIO_INT    GPIO_PIN_MASK(3)
-#define ANTENNA_BSP_RADIO_EXT    GPIO_PIN_MASK(4)
+#define ANTENNA_BSP_RADIO_BASE              GPIO_PORT_TO_BASE(GPIO_D_NUM)
+#define ANTENNA_BSP_RADIO_24GHZ_CC2538      GPIO_PIN_MASK(4)
+#define ANTENNA_BSP_RADIO_24GHZ_AT86RF215   GPIO_PIN_MASK(4)
 /** @} */
 /*---------------------------------------------------------------------------*/
 /**

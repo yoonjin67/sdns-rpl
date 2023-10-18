@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Texas Instruments Incorporated - http://www.ti.com/
+ * Copyright (c) 2014, Thingsquare, http://www.thingsquare.com/.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,43 +32,51 @@
  */
 /*---------------------------------------------------------------------------*/
 /**
- * \addtogroup openmote-b
+ * \addtogroup openmote-b-antenna
+ * @{
+ *
+ * Driver for the OpenMote-B RF switch. The 2.4 GHz SMA connector can be
+ * connected to either:
+ * - CC2538 radio, configured through antenna_select_cc2538()
+ * - AT86RF215 radio, configured through antenna_select_at86rf215()
+ *
+ * Note that the sub-GHz SMA connector on the board is always connected to
+ * the AT86RF215 radio.
  * @{
  *
  * \file
- *  Board-initialisation for the OpenMote-B platform
+ * Driver implementation for the OpenMote-B antenna switch
  */
 /*---------------------------------------------------------------------------*/
 #include "contiki.h"
-#include "antenna.h"
 #include "dev/gpio.h"
-#include "dev/ioc.h"
-#include <stdint.h>
-#include <string.h>
+#include "antenna.h"
 /*---------------------------------------------------------------------------*/
-static void
-configure_unused_pins(void)
+void
+antenna_init(void)
 {
-  /* FIXME */
+  /* Configure the GPIO pins as output */
+  GPIO_SOFTWARE_CONTROL(ANTENNA_BSP_RADIO_BASE, ANTENNA_BSP_RADIO_24GHZ_CC2538);
+  GPIO_SOFTWARE_CONTROL(ANTENNA_BSP_RADIO_BASE, ANTENNA_BSP_RADIO_24GHZ_AT86RF215);
+  GPIO_SET_OUTPUT(ANTENNA_BSP_RADIO_BASE, ANTENNA_BSP_RADIO_24GHZ_CC2538);
+  GPIO_SET_OUTPUT(ANTENNA_BSP_RADIO_BASE, ANTENNA_BSP_RADIO_24GHZ_AT86RF215);
 }
 /*---------------------------------------------------------------------------*/
 void
-board_init()
+antenna_select_cc2538(void)
 {
-  antenna_init();
-  antenna_select_cc2538();
-  configure_unused_pins();
-
-  /* configure bootloader pin as input */
-  GPIO_SOFTWARE_CONTROL(GPIO_PORT_TO_BASE(GPIO_A_NUM),
-      GPIO_PIN_MASK(FLASH_CCA_CONF_BOOTLDR_BACKDOOR_PORT_A_PIN));
-  GPIO_SET_INPUT(GPIO_PORT_TO_BASE(GPIO_A_NUM),
-      GPIO_PIN_MASK(FLASH_CCA_CONF_BOOTLDR_BACKDOOR_PORT_A_PIN));
-  ioc_set_over(GPIO_A_NUM,
-      FLASH_CCA_CONF_BOOTLDR_BACKDOOR_PORT_A_PIN,
-      IOC_OVERRIDE_ANA);
+  GPIO_SET_PIN(ANTENNA_BSP_RADIO_BASE, ANTENNA_BSP_RADIO_24GHZ_CC2538);
+  GPIO_CLR_PIN(ANTENNA_BSP_RADIO_BASE, ANTENNA_BSP_RADIO_24GHZ_AT86RF215);
+}
+/*---------------------------------------------------------------------------*/
+void
+antenna_select_at86rf215(void)
+{
+  GPIO_SET_PIN(ANTENNA_BSP_RADIO_BASE, ANTENNA_BSP_RADIO_24GHZ_AT86RF215);
+  GPIO_CLR_PIN(ANTENNA_BSP_RADIO_BASE, ANTENNA_BSP_RADIO_24GHZ_CC2538);
 }
 /*---------------------------------------------------------------------------*/
 /**
+ * @}
  * @}
  */

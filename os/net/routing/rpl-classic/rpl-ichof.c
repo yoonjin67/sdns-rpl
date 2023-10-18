@@ -47,15 +47,18 @@
 #include "net/routing/rpl-classic/rpl-private.h"
 #include "net/nbr-table.h"
 #include "net/link-stats.h"
+#include "lib/random.h"
 
 #include <limits.h>
 #include "sys/log.h"
 
 #define LOG_MODULE "RPL"
-#define MOD INT32_MAX;
-#define CHY 500000
+#define BAIL 3
+#define FINE 5
+#define RVA  3
+#define CHY  300
+#define MOD UINT32_MAX
 #define LOG_LEVEL LOG_LEVEL_RPL
-#define BAIL 1000
 
 /*
  * RFC6551 and RFC6719 do not mandate the use of a specific formula to
@@ -219,15 +222,12 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   uint16_t p2_cost;
   int p1_is_acceptable;
   int p2_is_acceptable;
-
   p1_is_acceptable = p1 != NULL && parent_is_acceptable(p1);
   p2_is_acceptable = p2 != NULL && parent_is_acceptable(p2);
   if(!p1_is_acceptable) {
-    p2->cnt=!p2_is_acceptable?p2->cnt:p2->cnt-BAIL;
     return p2;
   }
   if(!p2_is_acceptable) {
-    p1->cnt=!p1_is_acceptable?p1->cnt:p1->cnt-BAIL;
     return p1;
   }
 
@@ -244,16 +244,20 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   }
 
   if(p1_cost < p2_cost+PARENT_SWITCH_THRESHOLD) {
+
     ++p1->cnt;
     return p1;
   } else if(p1_cost > p2_cost+PARENT_SWITCH_THRESHOLD) {
     ++p2->cnt;
     return p2;
   } else {
-    if(p1->cnt+CHY<p2->cnt) {
-      p1->cnt++;
+    if(p1->cnt+CHY+random_rand()%RVA<p2->cnt-CHY) {
+      p2->cnt-=BAIL;
+      p1->cnt+=FINE;
       return p1;
-    } else if(p2->cnt+CHY<p2->cnt){
+    } else if(p2->cnt+CHY+random_rand()%RVA<p1->cnt-CHY) {
+      p1->cnt-=BAIL;
+      p2->cnt+=FINE;
       return p2;
     }
   }
