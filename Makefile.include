@@ -698,3 +698,5 @@ else
 %: %.$(TARGET)
 	@
 endif
+TARGET_LIBFILES = -lm
+

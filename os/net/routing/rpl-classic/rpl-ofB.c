@@ -58,9 +58,8 @@
 #define MIN_STEP_OF_RANK   1
 #define MAX_STEP_OF_RANK   9
 
-#define RVA  2
-#define MOD UINT32_MAX
-#define CHY 9000
+#define MOD UINT64_MAX
+#define CHY 5000
 /*
  * OF0 computes rank increase as follows:
  *
@@ -198,17 +197,14 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
     p2->cnt++;
     return p2;
   } else {
-    if(p1->cnt+CHY+random_rand()%RVA<p2->cnt-CHY) {
+    if(p1->cnt+CHY<p2->cnt-CHY) {
       p1->cnt++;
       return p1;
-    } else if(p2->cnt+CHY+random_rand()%RVA<p1->cnt-CHY) {
-      p1->cnt++;
+    } else if(p2->cnt+CHY<p1->cnt-CHY) {
+      p2->cnt++;
       return p2;
     }
   }
-
-  p1->cnt%=MOD;
-  p2->cnt%=MOD;
 
   /* Coarse-grained path costs (multiple of min_hoprankinc), we
      operate without hysteresis. */

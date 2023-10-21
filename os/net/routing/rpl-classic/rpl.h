@@ -123,7 +123,7 @@ struct rpl_parent {
   rpl_rank_t rank;
   uint8_t dtsn;
   uint8_t flags;
-  uint32_t cnt;
+  uint64_t cnt;
 };
 typedef struct rpl_parent rpl_parent_t;
 /*---------------------------------------------------------------------------*/

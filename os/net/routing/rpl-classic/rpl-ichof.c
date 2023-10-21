@@ -51,14 +51,11 @@
 
 #include <limits.h>
 #include "sys/log.h"
-
+#include <math.h>
 #define LOG_MODULE "RPL"
-#define BAIL 3
-#define FINE 5
-#define RVA  3
-#define CHY  300
-#define MOD UINT32_MAX
 #define LOG_LEVEL LOG_LEVEL_RPL
+#define CHY(x,RATIO) (uint16_t)pow(x,RATIO)
+#define MOD UINT64_MAX
 
 /*
  * RFC6551 and RFC6719 do not mandate the use of a specific formula to
@@ -225,9 +222,11 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   p1_is_acceptable = p1 != NULL && parent_is_acceptable(p1);
   p2_is_acceptable = p2 != NULL && parent_is_acceptable(p2);
   if(!p1_is_acceptable) {
+    p2->cnt--;
     return p2;
   }
   if(!p2_is_acceptable) {
+    p1->cnt--;
     return p1;
   }
 
@@ -244,21 +243,19 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   }
 
   if(p1_cost < p2_cost+PARENT_SWITCH_THRESHOLD) {
-
-    ++p1->cnt;
     return p1;
   } else if(p1_cost > p2_cost+PARENT_SWITCH_THRESHOLD) {
-    ++p2->cnt;
     return p2;
   } else {
-    if(p1->cnt+CHY+random_rand()%RVA<p2->cnt-CHY) {
-      p2->cnt-=BAIL;
-      p1->cnt+=FINE;
+    if(p1->cnt+CHY(p1->cnt,0.2)<p2->cnt-CHY(p2->cnt,0.2)) {
+      p1->cnt+=CHY(p1->cnt+p1_cost,0.1);
       return p1;
-    } else if(p2->cnt+CHY+random_rand()%RVA<p1->cnt-CHY) {
-      p1->cnt-=BAIL;
-      p2->cnt+=FINE;
+    } else if(p2->cnt+CHY(p2->cnt,0.2)<p1->cnt-CHY(p1->cnt,0.2)) {
+      p2->cnt+=CHY(p2->cnt+p2_cost,0.1);
       return p2;
+    } else {
+      p2->cnt=p2!=dag->preferred_parent?p2->cnt:p2->cnt+CHY(p2->cnt+p2_cost,0.1);
+      p1->cnt=p1!=dag->preferred_parent?p1->cnt:p1->cnt+CHY(p1->cnt+p1_cost,0.1);
     }
   }
   p1->cnt%=MOD;
