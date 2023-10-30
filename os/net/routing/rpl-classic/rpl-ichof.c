@@ -231,6 +231,8 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   }
 
   dag = p1->dag; /* Both parents are in the same DAG. */
+  
+
   p1_cost = parent_path_cost(p1);
   p2_cost = parent_path_cost(p2);
 
@@ -247,15 +249,15 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   } else if(p1_cost > p2_cost+PARENT_SWITCH_THRESHOLD) {
     return p2;
   } else {
-    if(p1->cnt+CHY(p1->cnt,0.2)<p2->cnt-CHY(p2->cnt,0.2)) {
-      p1->cnt+=CHY(p1->cnt+p1_cost,0.1);
+    if(p1->cnt+CHY(p1_cost,0.5)<p2->cnt-CHY(p2_cost,0.5)) {
+      p1->cnt+=CHY(p1_cost,0.5);
       return p1;
-    } else if(p2->cnt+CHY(p2->cnt,0.2)<p1->cnt-CHY(p1->cnt,0.2)) {
-      p2->cnt+=CHY(p2->cnt+p2_cost,0.1);
+    } else if(p2->cnt+CHY(p2_cost,0.5)<p1->cnt-CHY(p1_cost,0.5)) {
+      p2->cnt+=CHY(p2_cost,0.5);
       return p2;
     } else {
-      p2->cnt=p2!=dag->preferred_parent?p2->cnt:p2->cnt+CHY(p2->cnt+p2_cost,0.1);
-      p1->cnt=p1!=dag->preferred_parent?p1->cnt:p1->cnt+CHY(p1->cnt+p1_cost,0.1);
+      p2->cnt=p2!=dag->preferred_parent?p2->cnt:p2->cnt+CHY(p2_cost,0.5);
+      p1->cnt=p1!=dag->preferred_parent?p1->cnt:p1->cnt+CHY(p1_cost,0.5);
     }
   }
   p1->cnt%=MOD;

@@ -44,7 +44,7 @@
 #include "net/nbr-table.h"
 #include "net/link-stats.h"
 #include "lib/random.h"
-
+#include <math.h>
 #include "sys/log.h"
 
 #define SWITCH_THRESHOLD 50
@@ -59,7 +59,7 @@
 #define MAX_STEP_OF_RANK   9
 
 #define MOD UINT64_MAX
-#define CHY 5000
+#define CHY(x) pow(x,x/65535)
 /*
  * OF0 computes rank increase as follows:
  *
@@ -178,9 +178,11 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   p1_is_acceptable = p1 != NULL && parent_is_acceptable(p1);
   p2_is_acceptable = p2 != NULL && parent_is_acceptable(p2);
   if(!p1_is_acceptable) {
+    p2->cnt++;
     return p2;
   }
-  if(!p2_is_acceptable) {
+  else if(!p2_is_acceptable) {
+    p1->cnt++;
     return p1;
   }
 
@@ -197,10 +199,10 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
     p2->cnt++;
     return p2;
   } else {
-    if(p1->cnt+CHY<p2->cnt-CHY) {
+    if(p1->cnt+CHY(p1->cnt)>p2->cnt-CHY(p2->cnt)) {
       p1->cnt++;
       return p1;
-    } else if(p2->cnt+CHY<p1->cnt-CHY) {
+    } else if(p2->cnt+CHY(p2->cnt)>p1->cnt-CHY(p1->cnt)) {
       p2->cnt++;
       return p2;
     }
