@@ -1391,6 +1391,8 @@ dao_ack_input(void)
   instance = rpl_get_instance(instance_id);
   if(instance == NULL) {
     uipbuf_clear();
+    parent = rpl_find_parent(instance->current_dag, &UIP_IP_BUF->srcipaddr);
+    parent->cnt++;
     return;
   }
 
@@ -1398,6 +1400,8 @@ dao_ack_input(void)
     parent = rpl_find_parent(instance->current_dag, &UIP_IP_BUF->srcipaddr);
     if(parent == NULL) {
       /* Unknown instance -- drop the packet and ignore. */
+    parent = rpl_find_parent(instance->current_dag, &UIP_IP_BUF->srcipaddr);
+    parent->cnt++;
       uipbuf_clear();
       return;
     }
@@ -1461,7 +1465,10 @@ dao_ack_input(void)
         /* This node did not get in to the routing tables above -- remove. */
         uip_ds6_route_rm(re);
       }
+
     } else {
+      parent = rpl_find_parent(instance->current_dag, &UIP_IP_BUF->srcipaddr);
+      parent->cnt++;
       LOG_WARN("No route entry found to forward DAO ACK (seqno %u)\n",
                sequence);
     }
