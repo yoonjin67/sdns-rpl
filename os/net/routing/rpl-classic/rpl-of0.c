@@ -191,12 +191,12 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
     return p1_cost < p2_cost ? p1 : p2;
   } else {
     /* We have a tie! Stick to the current preferred parent if possible. */
-    if(p1 == dag->preferred_parent || p2 == dag->preferred_parent) {
+  //  if(p1 == dag->preferred_parent || p2 == dag->preferred_parent) {
       return dag->preferred_parent;
-    }
+ //   }
     /* None of the nodes is the current preferred parent; choose the
        parent with best link metric. */
-    return parent_link_metric(p1) < parent_link_metric(p2) ? p1 : p2;
+//    return parent_link_metric(p1) < parent_link_metric(p2) ? p1 : p2;
   }
 }
 /*---------------------------------------------------------------------------*/

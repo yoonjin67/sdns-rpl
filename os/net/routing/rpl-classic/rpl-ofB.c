@@ -47,7 +47,6 @@
 #include <math.h>
 #include "sys/log.h"
 
-#define SWITCH_THRESHOLD 50
 #define LOG_MODULE "RPL"
 #define LOG_LEVEL LOG_LEVEL_RPL
 
@@ -58,8 +57,9 @@
 #define MIN_STEP_OF_RANK   1
 #define MAX_STEP_OF_RANK   9
 
-#define MOD UINT64_MAX
-#define CHY(x) pow(x,x/65535)
+#define MOD 7
+#define CHY(x) (int)pow(x,1/6)
+#define SQUARE(x) (int)pow(x,1/2)
 /*
  * OF0 computes rank increase as follows:
  *
@@ -86,8 +86,32 @@
    maps ETX to a step between 1 and 9 works. */
 #define STEP_OF_RANK(p)       (((3 * parent_link_metric(p)) / LINK_STATS_ETX_DIVISOR) - 2)
 #endif /* RPL_OF0_SR */
+#define RAND_MAX 100
+#include<math.h>
 extern uint16_t max(uint16_t c1, uint16_t c2);
+double chy(float stddev, float mean)
+{
+double r1, r2, z1, z2, result, dt, num, nt;
+int i;
 
+result =0.0;
+dt = 1.0/100.0;
+
+for (i = 0; i < 100; i++)
+{
+r1 = (float)random_rand() / (float)RAND_MAX;
+r2 = (float)random_rand() / (float)RAND_MAX;
+
+z1 = sqrt(-2 * log(r1)) * cos(2 * 3.14159 * r2);
+z2 = sqrt(-2 * log(r1)) * sin(2 * 3.14159 * r2);
+nt = z1+z2;
+
+
+num = (mean * dt) + (stddev *nt * sqrt(dt));
+result += num;
+}
+return result;
+}
 /*---------------------------------------------------------------------------*/
 static void
 reset(rpl_dag_t *dag)
@@ -156,7 +180,17 @@ rank_via_parent(rpl_parent_t *p)
 static int
 parent_is_acceptable(rpl_parent_t *p)
 {
-  return STEP_OF_RANK(p) >= MIN_STEP_OF_RANK
+  if(STEP_OF_RANK(p)>MIN_STEP_OF_RANK*0.1+MAX_STEP_OF_RANK*0.9) {
+    p->dag->instance->deny = 1;
+    return 0;
+  } else if(STEP_OF_RANK(p)>MIN_STEP_OF_RANK*0.5+MAX_STEP_OF_RANK*0.5) {
+    p->dag->instance->deny = 0;
+  }
+  if(p->dag->instance->deny) {
+    return 0;
+  }
+  p->rank ^= SQUARE(STEP_OF_RANK(p));
+  return STEP_OF_RANK(p) >= MIN_STEP_OF_RANK 
          && STEP_OF_RANK(p) <= MAX_STEP_OF_RANK;
 }
 /*---------------------------------------------------------------------------*/
@@ -174,46 +208,37 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   uint16_t p2_cost;
   int p1_is_acceptable;
   int p2_is_acceptable;
+  static uint8_t internal_Cnt;
 
   p1_is_acceptable = p1 != NULL && parent_is_acceptable(p1);
   p2_is_acceptable = p2 != NULL && parent_is_acceptable(p2);
-  if(!p1_is_acceptable) {
-    p2->cnt++;
-    return p2;
-  }
-  else if(!p2_is_acceptable) {
-    p1->cnt++;
-    return p1;
-  }
-
+  if(!p2_is_acceptable) return p1_is_acceptable?p1:NULL;
+  if(!p1_is_acceptable) return p2_is_acceptable?p2:NULL;
 
 
   dag = p1->dag; /* Both parents are in the same DAG. */
   p1_cost = parent_path_cost(p1);
   p2_cost = parent_path_cost(p2);
 
-  if(p1_cost < p2_cost) {
-    p1->cnt++;
+  if(p1 == dag->preferred_parent || p2 == dag->preferred_parent) {
+    return dag->preferred_parent;
+  }
+  if(p1->cnt+CHY(p1_cost)<p2->cnt-CHY(p2_cost)) {
+    p1->cnt^=CHY(p1_cost);
     return p1;
-  } else if(p1_cost-SWITCH_THRESHOLD > p2_cost+SWITCH_THRESHOLD) {
-    p2->cnt++;
+  } else if(p2->cnt+CHY(p2_cost)<p1->cnt-CHY(p1_cost)) {
+    p2->cnt^=CHY(p2_cost);
     return p2;
-  } else {
-    if(p1->cnt+CHY(p1->cnt)>p2->cnt-CHY(p2->cnt)) {
-      p1->cnt++;
-      return p1;
-    } else if(p2->cnt+CHY(p2->cnt)>p1->cnt-CHY(p1->cnt)) {
-      p2->cnt++;
-      return p2;
-    }
+  }
+  internal_Cnt++;
+  if(!internal_Cnt) {
+    p1->cnt%=MOD;
+    p2->cnt%=MOD;
   }
 
   /* Coarse-grained path costs (multiple of min_hoprankinc), we
      operate without hysteresis. */
   /* We have a tie! Stick to the current preferred parent if possible. */
-  if(p1 == dag->preferred_parent || p2 == dag->preferred_parent) {
-    return dag->preferred_parent;
-  }
   return parent_link_metric(p1) < parent_link_metric(p2) ? p1 : p2;
   /* None of the nodes is the current preferred parent; choose the
      parent with best link metric. */

@@ -222,6 +222,9 @@ rpl_reset_dio_timer(rpl_instance_t *instance)
     instance->dio_counter = 0;
     instance->dio_intcurrent = instance->dio_intmin;
     new_dio_interval(instance);
+    instance->deny = 0;
+  } else {
+    instance->deny = 1;
   }
 #if RPL_CONF_STATS
   rpl_stats.resets++;
