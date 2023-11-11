@@ -67,7 +67,7 @@ void RPL_CALLBACK_PARENT_SWITCH(rpl_parent_t *old, rpl_parent_t *new);
 #endif /* RPL_CALLBACK_PARENT_SWITCH */
 
 /*---------------------------------------------------------------------------*/
-extern rpl_of_t rpl_of0, rpl_mrhof, rpl_lbmrhof, rpl_ofB, rpl_driplof;
+extern rpl_of_t rpl_of0, rpl_mrhof, rpl_lbmrhof;
 static rpl_of_t *const objective_functions[] = RPL_SUPPORTED_OFS;
 
 /*---------------------------------------------------------------------------*/

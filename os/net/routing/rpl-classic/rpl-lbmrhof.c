@@ -1,4 +1,5 @@
- /* Copyright (c) 2010, Swedish Institute of Computer Science.
+/*
+ * Copyright (c) 2010, Swedish Institute of Computer Science.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,7 +27,6 @@
  * SUCH DAMAGE.
  */
 
-double prefix = 0.6;
 /**
  * \file
  *         The Minimum Rank with Hysteresis Objective Function (MRHOF), RFC6719
@@ -47,14 +47,15 @@ double prefix = 0.6;
 #include "net/routing/rpl-classic/rpl-private.h"
 #include "net/nbr-table.h"
 #include "net/link-stats.h"
-#include "lib/random.h"
 
 #include <limits.h>
 #include "sys/log.h"
-#include <math.h>
+
 #define LOG_MODULE "RPL"
+#define MOD INT32_MAX;
+#define CHY 8000
 #define LOG_LEVEL LOG_LEVEL_RPL
-#define CHY(x,RATIO) (uint16_t)(pow(x,RATIO))
+#define BAIL 1000
 
 /*
  * RFC6551 and RFC6719 do not mandate the use of a specific formula to
@@ -92,15 +93,16 @@ double prefix = 0.6;
  * parent. Default in RFC6719: 192, eq ETX of 1.5.  We use a more
  * aggressive setting: 96, eq ETX of 0.75.
  */
-#define PARENT_SWITCH_THRESHOLD 96 /* Eq ETX of 0.75 */
+#define PARENT_SWITCH_THRESHOLD 192 /* Eq ETX of 0.75 */
 #else /* !RPL_MRHOF_SQUARED_ETX */
 #define MAX_LINK_METRIC     2048 /* Eq ETX of 4 */
-#define PARENT_SWITCH_THRESHOLD 160 /* Eq ETX of 1.25 (results in a churn comparable
+#define PARENT_SWITCH_THRESHOLD 256 /* Eq ETX of 1.25 (results in a churn comparable
                                        to the threshold of 96 in the non-squared case) */
 #endif /* !RPL_MRHOF_SQUARED_ETX */
 
 /* Reject parents that have a higher path cost than the following. */
 #define MAX_PATH_COST      32768   /* Eq path ETX of 256 */
+
 /*---------------------------------------------------------------------------*/
 static void
 reset(rpl_dag_t *dag)
@@ -213,32 +215,25 @@ static rpl_parent_t *
 best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
 {
   rpl_dag_t *dag;
-  uint16_t p1_cost=0;
-  uint16_t p2_cost=0;
+  uint16_t p1_cost;
+  uint16_t p2_cost;
   int p1_is_acceptable;
   int p2_is_acceptable;
+
   p1_is_acceptable = p1 != NULL && parent_is_acceptable(p1);
   p2_is_acceptable = p2 != NULL && parent_is_acceptable(p2);
   if(!p1_is_acceptable) {
-    return p2_is_acceptable?p2:NULL;
+    p2->cnt=!p2_is_acceptable?p2->cnt:p2->cnt-BAIL;
+    return p2;
   }
   if(!p2_is_acceptable) {
-    return p1_is_acceptable?p1:NULL;
+    p1->cnt=!p1_is_acceptable?p1->cnt:p1->cnt-BAIL;
+    return p1;
   }
-
 
   dag = p1->dag; /* Both parents are in the same DAG. */
-
   p1_cost = parent_path_cost(p1);
   p2_cost = parent_path_cost(p2);
-  if(p1->dag->instance->deny)  {
-    p1->cnt=0;
-  }
-  if(p2->dag->instance->deny) {
-    p2->cnt=0;
-  }
-
-
 
   /* Maintain the stability of the preferred parent in case of similar ranks. */
   if(p1 == dag->preferred_parent || p2 == dag->preferred_parent) {
@@ -249,18 +244,21 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   }
 
   if(p1_cost < p2_cost+PARENT_SWITCH_THRESHOLD) {
+    ++p1->cnt;
     return p1;
   } else if(p1_cost > p2_cost+PARENT_SWITCH_THRESHOLD) {
+    ++p2->cnt;
     return p2;
   } else {
-    if(p1->cnt-CHY(p1_cost,prefix)>p2->cnt+CHY(p2_cost,prefix)) {
+    if(p1->cnt+CHY<p2->cnt) {
       p1->cnt++;
       return p1;
-    } else if(p2->cnt-CHY(p2_cost,prefix)>p1->cnt+CHY(p1_cost,prefix)) {
-      p2->cnt++;
+    } else if(p2->cnt+CHY<p2->cnt){
       return p2;
     }
   }
+  p1->cnt%=MOD;
+  p2->cnt%=MOD;
   return dag->preferred_parent;
 }
 /*---------------------------------------------------------------------------*/
