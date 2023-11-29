@@ -124,7 +124,6 @@ struct rpl_parent {
   uint8_t dtsn;
   uint8_t flags;
   uint16_t cnt;
-  _Bool    bad;
 };
 typedef struct rpl_parent rpl_parent_t;
 /*---------------------------------------------------------------------------*/
@@ -269,7 +268,7 @@ struct rpl_instance {
 #if RPL_WITH_DAO_ACK
   struct ctimer dao_retransmit_timer;
 #endif /* RPL_WITH_DAO_ACK */
-  _Bool bad;
+  uint8_t  bad;
 };
 
 /*---------------------------------------------------------------------------*/

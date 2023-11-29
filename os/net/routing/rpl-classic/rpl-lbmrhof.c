@@ -52,8 +52,10 @@
 #include "sys/log.h"
 
 #define LOG_MODULE "RPL"
-#define MOD INT16_MAX
-#define CHY 7000
+#define MOD 20000
+#define MOD_FINE 10000
+#define CHY 8000
+#define BAD 300
 #define LOG_LEVEL LOG_LEVEL_RPL
 #define BAIL 1000
 
@@ -235,8 +237,6 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   p1_cost = parent_path_cost(p1);
   p2_cost = parent_path_cost(p2);
 
-  p1->bad = p1->dag->instance->bad;
-  p2->bad = p2->dag->instance->bad;
 
   /* Maintain the stability of the preferred parent in case of similar ranks. */
   if(p1 == dag->preferred_parent || p2 == dag->preferred_parent) {
@@ -245,9 +245,15 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
 
      return dag->preferred_parent;
     }
-  } else if(p1->bad || p2->bad) {
-      return p1->bad?p2:p1;
-   }
+  }
+  if(dag->instance->bad>BAD) {
+    if(p1_cost+PARENT_SWITCH_THRESHOLD<p2_cost) {
+      return p1;
+    }
+    if(p2_cost+PARENT_SWITCH_THRESHOLD<p1_cost) {
+      return p2;
+    }
+  }
 
   if(p1_cost+PARENT_SWITCH_THRESHOLD < p2_cost) {
     ++p1->cnt;
@@ -264,8 +270,14 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
       return p2;
     }
   }
-  p1->cnt%=MOD;
-  p2->cnt%=MOD;
+  if(dag->instance->bad>BAD) {
+    p1->cnt%=MOD;
+    p2->cnt%=MOD;
+  } else {
+    p1->cnt%=MOD_FINE;
+    p2->cnt%=MOD_FINE;
+  } 
+
   return dag->preferred_parent;
 }
 /*---------------------------------------------------------------------------*/
