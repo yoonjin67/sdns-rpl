@@ -105,6 +105,7 @@
 #define RPL_OF_OCP RPL_CONF_OF_OCP
 #else /* RPL_CONF_OF_OCP */
 #define RPL_OF_OCP RPL_OCP_LBMRHOF
+//#define RPL_OF_OCP RPL_OCP_MRHOF
 #endif /* RPL_CONF_OF_OCP */
 
 /*

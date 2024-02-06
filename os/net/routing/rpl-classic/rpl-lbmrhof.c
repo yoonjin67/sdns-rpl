@@ -44,6 +44,7 @@
  */
 
 #include "net/routing/rpl-classic/rpl.h"
+#include "net/queuebuf.h"
 #include "net/routing/rpl-classic/rpl-private.h"
 #include "net/nbr-table.h"
 #include "net/link-stats.h"
@@ -51,13 +52,11 @@
 #include <limits.h>
 #include "sys/log.h"
 
+extern uint8_t queuebuf_hlen;
 #define LOG_MODULE "RPL"
-#define MOD 20000
-#define MOD_FINE 10000
-#define CHY 8000
-#define BAD 300
+#define CHY 10*queuebuf_hlen
 #define LOG_LEVEL LOG_LEVEL_RPL
-#define BAIL 1000
+#define BAIL PREFIX_HLEN/10
 
 /*
  * RFC6551 and RFC6719 do not mandate the use of a specific formula to
@@ -222,62 +221,63 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   int p1_is_acceptable;
   int p2_is_acceptable;
 
+
   p1_is_acceptable = p1 != NULL && parent_is_acceptable(p1);
   p2_is_acceptable = p2 != NULL && parent_is_acceptable(p2);
+  if(!(p1_is_acceptable||p2_is_acceptable)) return NULL;
   if(!p1_is_acceptable) {
-    p2->cnt=!p2_is_acceptable?p2->cnt:p2->cnt-BAIL;
+//    p2->cnt = p2->cnt+BAIL;
     return p2;
   }
   if(!p2_is_acceptable) {
-    p1->cnt=!p1_is_acceptable?p1->cnt:p1->cnt-BAIL;
+//    p1->cnt = p1->cnt+BAIL;
     return p1;
   }
+
 
   dag = p1->dag; /* Both parents are in the same DAG. */
   p1_cost = parent_path_cost(p1);
   p2_cost = parent_path_cost(p2);
 
 
-  /* Maintain the stability of the preferred parent in case of similar ranks. */
   if(p1 == dag->preferred_parent || p2 == dag->preferred_parent) {
     if(p1_cost < p2_cost + PARENT_SWITCH_THRESHOLD &&
        p1_cost > p2_cost - PARENT_SWITCH_THRESHOLD) {
-
-     return dag->preferred_parent;
+      return dag->preferred_parent;
     }
   }
-  if(dag->instance->bad>BAD) {
-    if(p1_cost+PARENT_SWITCH_THRESHOLD<p2_cost) {
+  if(dag->instance->bad) {
+  /* Maintain the stability of the preferred parent in case of similar ranks. */
+    if(p1_cost+PARENT_SWITCH_THRESHOLD < p2_cost) {
       return p1;
-    }
-    if(p2_cost+PARENT_SWITCH_THRESHOLD<p1_cost) {
+    } else if(p1_cost > p2_cost+PARENT_SWITCH_THRESHOLD) {
       return p2;
+    } else {
+      if(p1->cnt+CHY<p2->cnt) {
+        return p2;
+      } else if(p2->cnt+CHY<p1->cnt){
+        return p1;
+      }
     }
   }
+
+
+
+  /* Maintain the stability of the preferred parent in case of similar ranks. */
 
   if(p1_cost+PARENT_SWITCH_THRESHOLD < p2_cost) {
-    ++p1->cnt;
+    p1->cnt++;
     return p1;
   } else if(p1_cost > p2_cost+PARENT_SWITCH_THRESHOLD) {
-    ++p2->cnt;
+    p2->cnt++;
     return p2;
   } else {
     if(p1->cnt+CHY<p2->cnt) {
-      ++p1->cnt;
       return p1;
-    } else if(p2->cnt+CHY<p2->cnt){
-      ++p2->cnt;
+    } else if(p2->cnt+CHY<p1->cnt){
       return p2;
     }
   }
-  if(dag->instance->bad>BAD) {
-    p1->cnt%=MOD;
-    p2->cnt%=MOD;
-  } else {
-    p1->cnt%=MOD_FINE;
-    p2->cnt%=MOD_FINE;
-  } 
-
   return dag->preferred_parent;
 }
 /*---------------------------------------------------------------------------*/

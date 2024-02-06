@@ -268,7 +268,7 @@ struct rpl_instance {
 #if RPL_WITH_DAO_ACK
   struct ctimer dao_retransmit_timer;
 #endif /* RPL_WITH_DAO_ACK */
-  uint8_t  bad;
+  _Bool  bad;
 };
 
 /*---------------------------------------------------------------------------*/
