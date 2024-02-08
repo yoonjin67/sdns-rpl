@@ -193,6 +193,7 @@ handle_dio_timer(void *ptr)
        instance->dio_intmin + instance->dio_intdoubl) {
       instance->dio_intcurrent++;
       LOG_DBG("DIO Timer interval doubled %d\n", instance->dio_intcurrent);
+      instance->bad=0;
     }
     new_dio_interval(instance);
   }
@@ -223,8 +224,6 @@ rpl_reset_dio_timer(rpl_instance_t *instance)
     instance->dio_intcurrent = instance->dio_intmin;
     new_dio_interval(instance);
     instance->bad=0;
-  } else {
-    instance->bad=1;
   }
 #if RPL_CONF_STATS
   rpl_stats.resets++;
@@ -252,6 +251,7 @@ set_dao_lifetime_timer(rpl_instance_t *instance)
      */
     if(instance->default_lifetime == 0 || instance->lifetime_unit == 0) {
       expiration_time = CLOCK_SECOND / 2;
+      instance->bad=1;
     } else {
       expiration_time = (clock_time_t)instance->default_lifetime *
         (clock_time_t)instance->lifetime_unit * CLOCK_SECOND / 2;

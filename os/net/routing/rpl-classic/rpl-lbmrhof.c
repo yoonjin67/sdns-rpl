@@ -54,9 +54,9 @@
 
 extern uint8_t queuebuf_hlen;
 #define LOG_MODULE "RPL"
-#define CHY 10*queuebuf_hlen
+#define CHY 4000-queuebuf_hlen*100
 #define LOG_LEVEL LOG_LEVEL_RPL
-#define BAIL PREFIX_HLEN/10
+#define BAIL CHY/100
 
 /*
  * RFC6551 and RFC6719 do not mandate the use of a specific formula to
@@ -226,11 +226,11 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   p2_is_acceptable = p2 != NULL && parent_is_acceptable(p2);
   if(!(p1_is_acceptable||p2_is_acceptable)) return NULL;
   if(!p1_is_acceptable) {
-//    p2->cnt = p2->cnt+BAIL;
+    p2->cnt = p2->cnt+BAIL;
     return p2;
   }
   if(!p2_is_acceptable) {
-//    p1->cnt = p1->cnt+BAIL;
+    p1->cnt = p1->cnt+BAIL;
     return p1;
   }
 
