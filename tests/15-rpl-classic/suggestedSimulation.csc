@@ -8,7 +8,7 @@
       org.contikios.cooja.radiomediums.UDGM
       <transmitting_range>50.0</transmitting_range>
       <interference_range>50.0</interference_range>
-      <success_ratio_tx>0.6</success_ratio_tx>
+      <success_ratio_tx>0.9</success_ratio_tx>
       <success_ratio_rx>0.5</success_ratio_rx>
     </radiomedium>
     <events>
@@ -1119,14 +1119,14 @@ $(MAKE) -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <skin>org.contikios.cooja.plugins.skins.UDGMVisualizerSkin</skin>
       <skin>org.contikios.cooja.plugins.skins.GridVisualizerSkin</skin>
       <skin>org.contikios.cooja.plugins.skins.MoteTypeVisualizerSkin</skin>
-      <viewport>1.2761251235359325 0.0 0.0 1.2761251235359325 144.5348752219062 39.63098601332898</viewport>
+      <viewport>3.17540766739693 0.0 0.0 3.17540766739693 36.683580712173764 15.268655116686777</viewport>
     </plugin_config>
-    <bounds x="1" y="1" height="400" width="400" z="1" />
+    <bounds x="1" y="1" height="400" width="400" z="2" />
   </plugin>
   <plugin>
     org.contikios.cooja.plugins.LogListener
     <plugin_config>
-      <filter />
+      <filter>Sending</filter>
       <formatted_time />
       <coloring />
     </plugin_config>
@@ -1138,115 +1138,12 @@ $(MAKE) -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <notes>Enter notes here</notes>
       <decorations>true</decorations>
     </plugin_config>
-    <bounds x="680" y="0" height="160" width="904" z="2" />
+    <bounds x="680" y="0" height="160" width="904" z="4" />
   </plugin>
   <plugin>
     org.contikios.cooja.plugins.ScriptRunner
     <plugin_config>
-      <script>function place(id, x, y) {&#xD;
-    var node = sim.getMoteWithID(id);&#xD;
-    node.getInterfaces().getPosition().setCoordinates(x, y, 0);&#xD;
-}&#xD;
-&#xD;
-function getRandom(min, max) {&#xD;
-  return r.nextFloat() * (max - min) + min;&#xD;
-}&#xD;
-&#xD;
-// From: http://bost.ocks.org/mike/shuffle/&#xD;
-function shuffle(array) {&#xD;
-  var m = array.length, t, i;&#xD;
-&#xD;
-  // While there remain elements to shuffle…&#xD;
-  while (m) {&#xD;
-&#xD;
-    // Pick a remaining element…&#xD;
-    i = Math.floor(r.nextFloat() * m--);&#xD;
-&#xD;
-    // And swap it with the current element.&#xD;
-    t = array[m];&#xD;
-    array[m] = array[i];&#xD;
-    array[i] = t;&#xD;
-  }&#xD;
-&#xD;
-  return array;&#xD;
-}&#xD;
-&#xD;
-GENERATE_MSG(0000000, 'randomize-nodes');&#xD;
-GENERATE_MSG(12000000, 'randomize-nodes');&#xD;
-GENERATE_MSG(24000000, 'randomize-nodes');&#xD;
-GENERATE_MSG(36000000, 'randomize-nodes');&#xD;
-&#xD;
-var r = new java.util.Random(sim.getRandomSeed());&#xD;
-var numForwarders = 20;&#xD;
-var forwardIDStart = 4;&#xD;
-packetsReceived = [];&#xD;
-packetsSent = [];&#xD;
-var hops;&#xD;
-&#xD;
-TIMEOUT(60000000, if(packetsReceived.length &gt; 50) { log.testOK(); } );&#xD;
-&#xD;
-while(true) {&#xD;
-    YIELD();&#xD;
-    if(msg.equals("randomize-nodes")) {&#xD;
-        log.log('Rearranging network\n');&#xD;
-        var allnodes = [];&#xD;
-        for(var i = 0; i &lt; numForwarders; i++) {&#xD;
-            allnodes.push(i);&#xD;
-        }&#xD;
-        shuffle(allnodes);&#xD;
-        /* Place 1/4 of the nodes in the first quadrant. */&#xD;
-        var i = 0;&#xD;
-        for(; i &lt; numForwarders / 4; i++) {&#xD;
-                place(i + forwardIDStart, &#xD;
-                      getRandom(0, 50),&#xD;
-                      getRandom(0, 50));&#xD;
-        }&#xD;
-        /* Place 1/4 of the nodes in the second quadrant. */&#xD;
-        for(; i &lt; 2 * numForwarders / 4; i++) {&#xD;
-                place(i + forwardIDStart, &#xD;
-                      getRandom(50, 100),&#xD;
-                      getRandom(0, 50));&#xD;
-        }&#xD;
-        /* Place 1/4 of the nodes in the third quadrant. */&#xD;
-        for(; i &lt; 3 * numForwarders / 4; i++) {&#xD;
-                place(i + forwardIDStart, &#xD;
-                      getRandom(50, 100),&#xD;
-                      getRandom(50, 100));&#xD;
-        }        &#xD;
-        /* Place 1/4 of the nodes in the fourth quadrant. */&#xD;
-        for(; i &lt; 4 * numForwarders / 4; i++) {&#xD;
-                place(i + forwardIDStart, &#xD;
-                      getRandom(0, 50),&#xD;
-                      getRandom(50, 100));&#xD;
-        }        &#xD;
-    } else if(msg.startsWith("Sending")) {&#xD;
-&#xD;
-        var data = msg.split(" ");&#xD;
-        var num = parseInt(data[14]);&#xD;
-        packetsSent.push(num);&#xD;
-        log.log("\nPDR:"+packetsReceived.length/packetsSent.length*100+"%");&#xD;
-        hops = 0;&#xD;
-    } else if(msg.startsWith("#L")) {&#xD;
-        hops++;&#xD;
-    } else if(msg.startsWith("Data")) {&#xD;
-        var data = msg.split(" ");&#xD;
-        var num = parseInt(data[14]);&#xD;
-        packetsReceived.push(num);&#xD;
-        &#xD;
-        /* Copy packetsReceived array to the packets array. */&#xD;
-        var packets = packetsReceived.slice();&#xD;
-        var recvstr = '';&#xD;
-        for(var i = 0; i &lt; num; i++) {&#xD;
-            if(packets[0] == i) {&#xD;
-                recvstr += '*';&#xD;
-                packets.shift();&#xD;
-            } else {&#xD;
-                recvstr += '_';   &#xD;
-            }    &#xD;
-        }&#xD;
-    }&#xD;
-}</script>
-      <active>true</active>
+      <scriptfile>[CONFIG_DIR]/js/13-lbrpl.js</scriptfile>
     </plugin_config>
     <bounds x="953" y="43" height="726" width="612" />
   </plugin>
@@ -1257,6 +1154,6 @@ while(true) {&#xD;
       <formatted_time />
       <analyzers name="6lowpan-pcap" />
     </plugin_config>
-    <bounds x="246" y="237" height="300" width="500" z="4" />
+    <bounds x="246" y="237" height="300" width="500" z="1" />
   </plugin>
 </simconf>
