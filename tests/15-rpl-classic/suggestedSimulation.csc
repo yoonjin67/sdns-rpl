@@ -1130,7 +1130,7 @@ $(MAKE) -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <formatted_time />
       <coloring />
     </plugin_config>
-    <bounds x="402" y="162" height="500" width="1184" z="3" />
+    <bounds x="402" y="162" height="500" width="1184" z="1" />
   </plugin>
   <plugin>
     org.contikios.cooja.plugins.Notes
@@ -1138,22 +1138,14 @@ $(MAKE) -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <notes>Enter notes here</notes>
       <decorations>true</decorations>
     </plugin_config>
-    <bounds x="680" y="0" height="160" width="904" z="4" />
+    <bounds x="680" y="0" height="160" width="904" z="3" />
   </plugin>
   <plugin>
     org.contikios.cooja.plugins.ScriptRunner
     <plugin_config>
       <scriptfile>[CONFIG_DIR]/js/13-lbrpl.js</scriptfile>
+      <active>true</active>
     </plugin_config>
     <bounds x="953" y="43" height="726" width="612" />
-  </plugin>
-  <plugin>
-    org.contikios.cooja.plugins.RadioLogger
-    <plugin_config>
-      <split>150</split>
-      <formatted_time />
-      <analyzers name="6lowpan-pcap" />
-    </plugin_config>
-    <bounds x="246" y="237" height="300" width="500" z="1" />
   </plugin>
 </simconf>

@@ -226,11 +226,11 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   p2_is_acceptable = p2 != NULL && parent_is_acceptable(p2);
   if(!(p1_is_acceptable||p2_is_acceptable)) return NULL;
   if(!p1_is_acceptable) {
-    p2->cnt = p2->cnt+BAIL;
+    p2->cnt=(uint16_t)((uint32_t)p2->cnt+BAIL)%65536;
     return p2;
   }
   if(!p2_is_acceptable) {
-    p1->cnt = p1->cnt+BAIL;
+    p1->cnt=(uint16_t)((uint32_t)p1->cnt+BAIL)%65536;
     return p1;
   }
 
@@ -266,15 +266,17 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   /* Maintain the stability of the preferred parent in case of similar ranks. */
 
   if(p1_cost+PARENT_SWITCH_THRESHOLD < p2_cost) {
-    p1->cnt++;
+    p1->cnt=(uint16_t)((uint32_t)p1->cnt+1L)%65536;
     return p1;
   } else if(p1_cost > p2_cost+PARENT_SWITCH_THRESHOLD) {
-    p2->cnt++;
+    p2->cnt=(uint16_t)((uint32_t)p2->cnt+1L)%65536;
     return p2;
   } else {
     if(p1->cnt+CHY<p2->cnt) {
+      p1->cnt=(uint16_t)((uint32_t)p1->cnt+1L)%65536;
       return p1;
     } else if(p2->cnt+CHY<p1->cnt){
+      p2->cnt=(uint16_t)((uint32_t)p2->cnt+1L)%65536;
       return p2;
     }
   }

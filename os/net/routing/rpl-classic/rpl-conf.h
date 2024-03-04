@@ -104,8 +104,8 @@
 #ifdef RPL_CONF_OF_OCP
 #define RPL_OF_OCP RPL_CONF_OF_OCP
 #else /* RPL_CONF_OF_OCP */
-#define RPL_OF_OCP RPL_OCP_MRHOF
-//#define RPL_OF_OCP RPL_OCP_MRHOF
+#define RPL_OF_OCP RPL_OCP_LBMRHOF
+//#define RPL_OF_OCP RPL_OCP_LBMRHOF
 #endif /* RPL_CONF_OF_OCP */
 
 /*
@@ -116,7 +116,7 @@
 #ifdef RPL_CONF_SUPPORTED_OFS
 #define RPL_SUPPORTED_OFS RPL_CONF_SUPPORTED_OFS
 #else /* RPL_CONF_SUPPORTED_OFS */
-#define RPL_SUPPORTED_OFS {&rpl_of0, &rpl_mrhof}
+#define RPL_SUPPORTED_OFS {&rpl_of0, &rpl_lbmrhof}
 #endif /* RPL_CONF_SUPPORTED_OFS */
 
 /*
