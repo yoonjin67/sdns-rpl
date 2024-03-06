@@ -54,9 +54,9 @@
 
 extern uint8_t queuebuf_hlen;
 #define LOG_MODULE "RPL"
-#define CHY 4000-queuebuf_hlen*100
+#define FPT 4000-queuebuf_hlen*100
 #define LOG_LEVEL LOG_LEVEL_RPL
-#define BAIL CHY/100
+#define BAIL FPT/100
 
 /*
  * RFC6551 and RFC6719 do not mandate the use of a specific formula to
@@ -253,9 +253,9 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
     } else if(p1_cost > p2_cost+PARENT_SWITCH_THRESHOLD) {
       return p2;
     } else {
-      if(p1->cnt+CHY<p2->cnt) {
+      if(p1->cnt+FPT<p2->cnt) {
         return p2;
-      } else if(p2->cnt+CHY<p1->cnt){
+      } else if(p2->cnt+FPT<p1->cnt){
         return p1;
       }
     }
@@ -272,10 +272,10 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
     p2->cnt=(uint16_t)((uint32_t)p2->cnt+1L)%65536;
     return p2;
   } else {
-    if(p1->cnt+CHY<p2->cnt) {
+    if(p1->cnt+FPT<p2->cnt) {
       p1->cnt=(uint16_t)((uint32_t)p1->cnt+1L)%65536;
       return p1;
-    } else if(p2->cnt+CHY<p1->cnt){
+    } else if(p2->cnt+FPT<p1->cnt){
       p2->cnt=(uint16_t)((uint32_t)p2->cnt+1L)%65536;
       return p2;
     }

@@ -356,7 +356,7 @@ queuebuf_new_from_packetbuf(void)
 
 #if QUEUEBUF_STATS
     ++queuebuf_len;
-    queuebuf_hlen=queuebuf_len>queuebuf_hlen?PREFIX_HLEN:queuebuf_len+(queuebuf_len-queuebuf_hlen);
+    queuebuf_hlen=queuebuf_len>queuebuf_hlen?PREFIX_HLEN:((uint32_t)(queuebuf_len*2-queuebuf_hlen))%512;
     PRINTF("#A q=%d\n", queuebuf_len);
     if(queuebuf_len > queuebuf_max_len) {
       queuebuf_max_len = queuebuf_len;

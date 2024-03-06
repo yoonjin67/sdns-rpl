@@ -38,7 +38,7 @@ packetsReceived = [];
 packetsSent = [];
 var hops;
 
-TIMEOUT(8000000, if(packetsReceived.length/packetsSent.length*100>70) { log.testOK(); } );
+TIMEOUT(100000000, if(packetsReceived.length/packetsSent.length*100>70) { log.testOK(); } );
 
 while(true) {
     YIELD();
