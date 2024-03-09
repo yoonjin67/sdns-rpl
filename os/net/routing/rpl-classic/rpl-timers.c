@@ -68,7 +68,6 @@ clock_time_t RPL_PROBING_DELAY_FUNC(rpl_dag_t *dag);
 static struct ctimer periodic_timer;
 
 static void handle_periodic_timer(void *ptr);
-static void new_dio_interval(rpl_instance_t *instance);
 static void handle_dio_timer(void *ptr);
 
 static uint16_t next_dis;
@@ -105,7 +104,7 @@ handle_periodic_timer(void *ptr)
   ctimer_reset(&periodic_timer);
 }
 /*---------------------------------------------------------------------------*/
-static void
+void
 new_dio_interval(rpl_instance_t *instance)
 {
   uint32_t time;

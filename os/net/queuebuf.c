@@ -89,7 +89,7 @@ MEMB(buframmem, struct queuebuf_data, QUEUEBUFRAM_NUM);
    Every buffer stored in CFS has a swap id, referring to a specific
    offset in one of these files. */
 #define NQBUF_FILES 4
-#define PREFIX_HLEN 300
+#define PREFIX_HLEN 30
 #define NQBUF_PER_FILE 256
 #define QBUF_FILE_SIZE (NQBUF_PER_FILE*sizeof(struct queuebuf_data))
 #define NQBUF_ID (NQBUF_PER_FILE * NQBUF_FILES)

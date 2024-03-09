@@ -48,9 +48,9 @@
 #include "net/ipv6/uip-nd6.h"
 #include "net/ipv6/uip-sr.h"
 #include "net/ipv6/uip-icmp6.h"
-#include "net/routing/rpl-classic/rpl-private.h"
 #include "net/packetbuf.h"
 #include "net/ipv6/multicast/uip-mcast6.h"
+#include "net/routing/rpl-classic/rpl-private.h"
 #include "lib/random.h"
 
 #include "sys/log.h"
@@ -72,7 +72,7 @@ static void dis_input(void);
 static void dio_input(void);
 static void dao_input(void);
 static void dao_ack_input(void);
-
+extern void new_dio_interval(rpl_instance_t *instance);
 static void dao_output_target_seq(rpl_parent_t *parent, uip_ipaddr_t *prefix,
                                   uint8_t lifetime, uint8_t seq_no);
 
@@ -228,7 +228,8 @@ dis_input(void)
         LOG_INFO("LEAF ONLY Multicast DIS will NOT reset DIO timer\n");
 #else /* !RPL_LEAF_ONLY */
         LOG_DBG("Multicast DIS => reset DIO timer\n");
-        rpl_reset_dio_timer(instance);
+	  if(instance->bad) 
+             rpl_reset_dio_timer(instance);
 #endif /* !RPL_LEAF_ONLY */
       } else {
         /* Check if this neighbor should be added according to the policy. */
@@ -241,7 +242,6 @@ dis_input(void)
           LOG_ERR_("\n");
         } else {
           LOG_DBG("Unicast DIS, reply to sender\n");
-          dio_output(instance, &UIP_IP_BUF->srcipaddr);
         }
         /* } */
       }

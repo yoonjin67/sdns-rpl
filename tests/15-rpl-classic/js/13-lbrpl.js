@@ -38,12 +38,12 @@ packetsReceived = [];
 packetsSent = [];
 var hops;
 
-TIMEOUT(100000000, if(packetsReceived.length/packetsSent.length*100>70) { log.testOK(); } );
+TIMEOUT(24000000, if(packetsReceived.length/packetsSent.length*100>70) { log.testOK(); } );
 
 while(true) {
     YIELD();
     if(msg.equals("randomize-nodes")) {
-        log.log('Rearranging network\n');
+
         var allnodes = [];
         for(var i = 0; i < numForwarders; i++) {
             allnodes.push(i);
@@ -75,11 +75,11 @@ while(true) {
                       getRandom(50, 100));
         }        
     } else if(msg.startsWith("Sending")) {
-
+        log.log(packetsReceived.length+"/"+packetsSent.length+"\n")
         var data = msg.split(" ");
         var num = parseInt(data[14]);
         packetsSent.push(num);
-        log.log("\nPDR:"+packetsReceived.length/packetsSent.length*100+"%");
+   //     log.log("\nPDR:"+packetsReceived.length/packetsSent.length*100+"%");
         hops = 0;
     } else if(msg.startsWith("#L")) {
         hops++;

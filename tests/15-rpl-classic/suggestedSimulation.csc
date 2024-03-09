@@ -8,8 +8,8 @@
       org.contikios.cooja.radiomediums.UDGM
       <transmitting_range>50.0</transmitting_range>
       <interference_range>50.0</interference_range>
-      <success_ratio_tx>0.9</success_ratio_tx>
-      <success_ratio_rx>0.5</success_ratio_rx>
+      <success_ratio_tx>0.6</success_ratio_tx>
+      <success_ratio_rx>0.6</success_ratio_rx>
     </radiomedium>
     <events>
       <logoutput>10</logoutput>
@@ -1114,14 +1114,14 @@ $(MAKE) -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
   <plugin>
     org.contikios.cooja.plugins.Visualizer
     <plugin_config>
-      <moterelations>true</moterelations>
       <skin>org.contikios.cooja.plugins.skins.IDVisualizerSkin</skin>
       <skin>org.contikios.cooja.plugins.skins.UDGMVisualizerSkin</skin>
       <skin>org.contikios.cooja.plugins.skins.GridVisualizerSkin</skin>
       <skin>org.contikios.cooja.plugins.skins.MoteTypeVisualizerSkin</skin>
+      <skin>org.contikios.cooja.plugins.skins.TrafficVisualizerSkin</skin>
       <viewport>3.17540766739693 0.0 0.0 3.17540766739693 36.683580712173764 15.268655116686777</viewport>
     </plugin_config>
-    <bounds x="1" y="1" height="400" width="400" z="2" />
+    <bounds x="180" y="224" height="610" width="826" z="2" />
   </plugin>
   <plugin>
     org.contikios.cooja.plugins.Notes
@@ -1129,7 +1129,7 @@ $(MAKE) -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <notes>Enter notes here</notes>
       <decorations>true</decorations>
     </plugin_config>
-    <bounds x="680" y="0" height="160" width="904" z="3" />
+    <bounds x="680" y="0" height="160" width="904" z="5" />
   </plugin>
   <plugin>
     org.contikios.cooja.plugins.ScriptRunner
@@ -1137,7 +1137,7 @@ $(MAKE) -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <scriptfile>[CONFIG_DIR]/js/13-lbrpl.js</scriptfile>
       <active>true</active>
     </plugin_config>
-    <bounds x="953" y="43" height="726" width="612" z="1" />
+    <bounds x="1474" y="135" height="726" width="612" z="3" />
   </plugin>
   <plugin>
     org.contikios.cooja.plugins.RadioLogger
@@ -1146,6 +1146,6 @@ $(MAKE) -j$(CPUS) receiver-node.cooja TARGET=cooja</commands>
       <formatted_time />
       <analyzers name="6lowpan-pcap" />
     </plugin_config>
-    <bounds x="364" y="138" height="300" width="500" />
+    <bounds x="394" y="645" height="300" width="500" z="4" />
   </plugin>
 </simconf>
