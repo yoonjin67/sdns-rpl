@@ -54,7 +54,7 @@
 
 extern uint8_t queuebuf_hlen;
 #define LOG_MODULE "RPL"
-#define FPT 4000-queuebuf_hlen*100
+#define FPT 4000-queuebuf_hlen*2
 #define LOG_LEVEL LOG_LEVEL_RPL
 #define BAIL FPT/100
 

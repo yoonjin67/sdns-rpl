@@ -228,10 +228,13 @@ dis_input(void)
         LOG_INFO("LEAF ONLY Multicast DIS will NOT reset DIO timer\n");
 #else /* !RPL_LEAF_ONLY */
         LOG_DBG("Multicast DIS => reset DIO timer\n");
-	  if(instance->bad) 
-             rpl_reset_dio_timer(instance);
+        rpl_reset_dio_timer(instance);
 #endif /* !RPL_LEAF_ONLY */
       } else {
+	  if(!instance->bad) {
+            rpl_reset_dio_timer(instance);
+	    return;
+	  }
         /* Check if this neighbor should be added according to the policy. */
         if(rpl_icmp6_update_nbr_table(&UIP_IP_BUF->srcipaddr,
                                       NBR_TABLE_REASON_RPL_DIS, NULL) == NULL) {

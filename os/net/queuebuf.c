@@ -475,4 +475,4 @@ queuebuf_debug_print(void)
 }
 /*---------------------------------------------------------------------------*/
 /** @} */
-uint8_t queuebuf_hlen=100;
+uint8_t queuebuf_hlen=50;
