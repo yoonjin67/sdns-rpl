@@ -50,7 +50,6 @@
 
 #include "sys/log.h"
 
-extern int rank_stored;
 #define LOG_MODULE "RPL"
 #define LOG_LEVEL LOG_LEVEL_RPL
 
@@ -90,10 +89,10 @@ extern int rank_stored;
  * parent. Default in RFC6719: 192, eq ETX of 1.5.  We use a more
  * aggressive setting: 96, eq ETX of 0.75.
  */
-#define PARENT_SWITCH_THRESHOLD 96 /* Eq ETX of 0.75 */
+#define PARENT_SWITCH_THRESHOLD 192 /* Eq ETX of 0.75 */
 #else /* !RPL_MRHOF_SQUARED_ETX */
 #define MAX_LINK_METRIC     2048 /* Eq ETX of 4 */
-#define PARENT_SWITCH_THRESHOLD 160 /* Eq ETX of 1.25 (results in a churn comparable
+#define PARENT_SWITCH_THRESHOLD 256 /* Eq ETX of 1.25 (results in a churn comparable
                                        to the threshold of 96 in the non-squared case) */
 #endif /* !RPL_MRHOF_SQUARED_ETX */
 
@@ -146,7 +145,7 @@ parent_path_cost(rpl_parent_t *p)
 {
   uint16_t base;
 
-  if(p == NULL || p->dag == NULL || p->dag->instance == NULL || rank_stored == 0) {
+  if(p == NULL || p->dag == NULL || p->dag->instance == NULL) {
     return 0xffff;
   }
 

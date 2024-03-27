@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Zolertia(TM) is a trademark of Advancare,SL
+ * Copyright (c) 2022, Uppsala universitet.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,16 +26,10 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *
- * Author: Enric M. Calvo <ecalvo@zolertia.com> based on previous work by
- *         Niclas Finne <nfi@sics.se>, Joakim Eriksson <joakime@sics.se>
+ * This file is part of the Contiki operating system.
  *
  */
 
-#include "dev/button-sensor.h"
-
-void
-init_platform(void)
-{
-  process_start(&sensors_process, NULL);
-}
+/* SLIP does not work otherwise */
+#define LPM_CONF_MAX_PM 0
+#define LPM_CONF_ENABLE 0

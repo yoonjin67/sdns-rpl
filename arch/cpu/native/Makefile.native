@@ -49,12 +49,14 @@ endif
 ifeq ($(HOST_OS),Darwin)
 LDFLAGS_WERROR := -Wl,-fatal_warnings
 LDFLAGS += -Wl,-flat_namespace
+LDFLAGS += -framework Security
 CFLAGS += -DHAVE_SNPRINTF=1 -U__ASSERT_USE_STDERR
 endif
 
 # Disallow undefined symbols in object files.
 ifeq ($(HOST_OS),Linux)
 LDFLAGS += -Wl,-zdefs
+LDFLAGS += -Wl,--warn-common
 endif
 
 MAKE_MAC ?= MAKE_MAC_NULLMAC

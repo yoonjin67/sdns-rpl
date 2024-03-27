@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, Swedish Institute of Computer Science.
+ * Copyright (c) 2015, Hasso-Plattner-Institut.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,16 +28,34 @@
  *
  * This file is part of the Contiki operating system.
  *
- * Author: Niclas Finne <nfi@sics.se>, Joakim Eriksson <joakime@sics.se>
- *
  */
 
-#include "dev/button-sensor.h"
+/**
+ * \addtogroup csprng
+ * @{
+ *
+ * \file
+ *         SRAM-based CSPRNG seeder.
+ * \author
+ *         Konrad Krentz <konrad.krentz@gmail.com>
+ */
 
-SENSORS(&button_sensor);
+#ifndef CC2538_SRAM_SEEDER_H_
+#define CC2538_SRAM_SEEDER_H_
 
-void
-init_platform(void)
-{
-  process_start(&sensors_process, NULL);
-}
+#include "lib/csprng.h"
+
+/**
+ * \brief This function will feed the CSPRNG with a new seed.
+ *
+ *        Its implementation leverages the fact that SRAM cells are partly
+ *        random due to manufacturing variations. For randomness extraction,
+ *        this function uses the well-known von Neumann extractor. Note that
+ *        this function can only be called at start up and only if
+ *        LPM_CONF_MAX_PM >= LPM_PM2.
+ */
+void cc2538_sram_seeder_seed(void);
+
+#endif /* CC2538_SRAM_SEEDER_H_ */
+
+/** @} */

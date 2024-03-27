@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Swedish Institute of Computer Science.
+ * Copyright (c) 2015, Hasso-Plattner-Institut.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,34 +26,38 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
+ * This file is part of the Contiki operating system.
+ *
  */
 
-#include "lib/simEnvChange.h"
+/**
+ * \addtogroup csprng
+ * @{
+ *
+ * \file
+ *         I/Q data-based seeder.
+ * \author
+ *         Konrad Krentz <konrad.krentz@gmail.com>
+ */
 
-#include <stdio.h>
-#include <string.h>
+#ifndef IQ_SEEDER_H_
+#define IQ_SEEDER_H_
 
-// All registered interfaces
-extern const struct simInterface *simInterfaces[];
+#include "lib/csprng.h"
 
-char simDontFallAsleep = 0;
+/**
+ * \brief This function will feed the CSPRNG with a new seed.
+ *
+ *        Many manuals of radio chips from Texas Instruments suggest using I/Q
+*         data (Cartesian representations of the received signal) for
+*         generating true random numbers. This function follows this suggestion
+*         and extracts seeds from I/Q data. However, since those manuals state
+*         that I/Q data is not uniformly distributed, this function does not use
+*         I/Q data directly as seeds, but first applies an extractor function.
+*         Note that this function can only be called at start up.
+ */
+void iq_seeder_seed(void);
 
-int simProcessRunValue;
-int simEtimerPending;
-clock_time_t simEtimerNextExpirationTime;
+#endif /* IQ_SEEDER_H_ */
 
-void doActionsBeforeTick() {
-  // Poll all interfaces to do their thing before the tick
-  int i;
-  for(i = 0; simInterfaces[i] != NULL; ++i) {
-    simInterfaces[i]->doActionsBeforeTick();
-  }
-}
-
-void doActionsAfterTick() {
-  // Poll all interfaces to do their thing after the tick
-  int i;
-  for(i = 0; simInterfaces[i] != NULL; ++i) {
-    simInterfaces[i]->doActionsAfterTick();
-  }
-}
+/** @} */

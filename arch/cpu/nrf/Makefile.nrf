@@ -118,7 +118,7 @@ ifeq ($(NRF_NATIVE_USB),1)
   CONTIKI_CPU_SOURCEFILES += usb-arch.c
 
   CFLAGS += -DPLATFORM_DBG_CONF_USB=1
-  CFLAGS += -DPLAFTORM_SLIP_ARCH_CONF_USB=1
+  CFLAGS += -DPLATFORM_SLIP_ARCH_CONF_USB=1
   CFLAGS += -DNRF_NATIVE_USB=1
 endif
 
@@ -141,7 +141,7 @@ endif
 ifeq (, $(shell which $(NRFJPROG)))
 	$(error Could not find nrfjprog "$(NRFJPROG)", please install it)
 else
-	$(NRFJPROG) $(NRFJPROG_OPTIONS) $(NRFJPROG_FLAGS) --sectorerase --program $<
+	$(NRFJPROG) $(NRFJPROG_OPTIONS) $(NRFJPROG_FLAGS) --sectorerase --verify --program $<
 	$(NRFJPROG) $(NRFJPROG_OPTIONS) $(NRFJPROG_FLAGS) --reset
 endif
 
@@ -159,7 +159,7 @@ ifneq ($(filter nrf-upload-sequence,$(MAKECMDGOALS)),)
 endif
 
 nrf-upload-snr.%:
-	$(NRFJPROG) $(NRFJPROG_OPTIONS) --snr $* --sectorerase --program $(HEX_FILE)
+	$(NRFJPROG) $(NRFJPROG_OPTIONS) --snr $* --sectorerase --verify --program $(HEX_FILE)
 	$(NRFJPROG) $(NRFJPROG_OPTIONS) --snr $* --reset
 
 nrf-upload-sequence: $(foreach SNR, $(NRF_SNRS), nrf-upload-snr.$(SNR))

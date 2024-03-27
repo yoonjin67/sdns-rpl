@@ -161,7 +161,8 @@ PT_THREAD(cmd_ping(struct pt *pt, shell_output_func output, char *args))
     SHELL_OUTPUT(output, "Received ping reply from ");
     shell_output_6addr(output, &remote_addr);
     SHELL_OUTPUT(output, ", len %u, ttl %u, delay %lu ms\n",
-      curr_ping_datalen, curr_ping_ttl, (1000*(clock_time() - timeout_timer.timer.start))/CLOCK_SECOND);
+                 curr_ping_datalen, curr_ping_ttl,
+                 (unsigned long)((1000 * (clock_time() - timeout_timer.timer.start)) / CLOCK_SECOND));
   }
 
   PT_END(pt);
@@ -328,6 +329,10 @@ PT_THREAD(cmd_log(struct pt *pt, shell_output_func output, char *args))
   /* Get and parse argument: module name */
   SHELL_ARGS_NEXT(args, next_args);
   module = args;
+  if(module == NULL) {
+    SHELL_OUTPUT(output, "Module is not specified\n");
+    PT_EXIT(pt);
+  }
   prev_level = log_get_level(module);
   if(module == NULL || (strcmp("all", module) && prev_level == -1)) {
     SHELL_OUTPUT(output, "Invalid first argument: %s\n", module)
@@ -401,6 +406,10 @@ PT_THREAD(cmd_rpl_set_root(struct pt *pt, shell_output_func output, char *args))
 
   /* Get first arg (0/1) */
   SHELL_ARGS_NEXT(args, next_args);
+  if(args == NULL) {
+    SHELL_OUTPUT(output, "On-flag (0 or 1) is not specified\n");
+    PT_EXIT(pt);
+  }
 
   if(!strcmp(args, "1")) {
     is_on = 1;
@@ -547,6 +556,10 @@ PT_THREAD(cmd_tsch_set_coordinator(struct pt *pt, shell_output_func output, char
 
   /* Get first arg (0/1) */
   SHELL_ARGS_NEXT(args, next_args);
+  if(args == NULL) {
+    SHELL_OUTPUT(output, "On-flag (0 or 1) is not specified\n");
+    PT_EXIT(pt);
+  }
 
   if(!strcmp(args, "1")) {
     is_on = 1;
@@ -608,7 +621,7 @@ PT_THREAD(cmd_tsch_status(struct pt *pt, shell_output_func output, char *args))
       SHELL_OUTPUT(output, "none\n");
     }
     SHELL_OUTPUT(output, "-- Last synchronized: %lu seconds ago\n",
-                 (clock_time() - tsch_last_sync_time) / CLOCK_SECOND);
+                 (unsigned long)((clock_time() - tsch_last_sync_time) / CLOCK_SECOND));
     SHELL_OUTPUT(output, "-- Drift w.r.t. coordinator: %ld ppm\n",
                  tsch_adaptive_timesync_get_drift_ppm());
     SHELL_OUTPUT(output, "-- Network uptime: %lu seconds\n",
@@ -904,6 +917,10 @@ PT_THREAD(cmd_llsec_setkey(struct pt *pt, shell_output_func output, char *args))
   } else {
     int key;
     SHELL_ARGS_NEXT(args, next_args);
+    if(args == NULL) {
+      SHELL_OUTPUT(output, "Key index is not specified\n");
+      PT_EXIT(pt);
+    }
     key = atoi(args);
     if(key < 0) {
       SHELL_OUTPUT(output, "Illegal LLSEC Key index %d\n", key);

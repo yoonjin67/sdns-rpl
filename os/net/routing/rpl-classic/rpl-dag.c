@@ -60,7 +60,6 @@
 
 #define LOG_MODULE "RPL"
 #define LOG_LEVEL LOG_LEVEL_RPL
-int rank_stored;
 
 /* A configurable function called after every RPL parent switch. */
 #ifdef RPL_CALLBACK_PARENT_SWITCH
@@ -68,7 +67,7 @@ void RPL_CALLBACK_PARENT_SWITCH(rpl_parent_t *old, rpl_parent_t *new);
 #endif /* RPL_CALLBACK_PARENT_SWITCH */
 
 /*---------------------------------------------------------------------------*/
-extern rpl_of_t rpl_of0, rpl_mrhof;
+extern rpl_of_t rpl_of0, rpl_mrhof, rpl_lbmrhof;
 static rpl_of_t *const objective_functions[] = RPL_SUPPORTED_OFS;
 
 /*---------------------------------------------------------------------------*/
@@ -870,7 +869,7 @@ rpl_select_dag(rpl_instance_t *instance, rpl_parent_t *p)
       rpl_print_neighbor_list();
     }
   } else if(best_dag->rank != old_rank) {
-    LOG_DBG("RPL: Preferred parent update, rank changed from %u to %u\n",
+    LOG_DBG("Preferred parent update, rank changed from %u to %u\n",
             (unsigned)old_rank, best_dag->rank);
   }
   return best_dag;
@@ -1412,6 +1411,7 @@ int
 rpl_process_parent_event(rpl_instance_t *instance, rpl_parent_t *p)
 {
   int return_value;
+  rpl_parent_t *last_parent = instance->current_dag->preferred_parent;
 
 #if LOG_DBG_ENABLED
   rpl_rank_t old_rank;
@@ -1433,16 +1433,24 @@ rpl_process_parent_event(rpl_instance_t *instance, rpl_parent_t *p)
   if(!acceptable_rank(p->dag, rpl_rank_via_parent(p))) {
     /* The candidate parent is no longer valid: the rank increase
        resulting from the choice of it as a parent would be too high. */
-    rank_stored = p->rank;
+    LOG_WARN("Unacceptable rank %u (Current min %u, MaxRankInc %u)\n",
+             (unsigned)p->rank,
+             p->dag->min_rank, p->dag->instance->max_rankinc);
+    rpl_nullify_parent(p);
     if(p != instance->current_dag->preferred_parent) {
       return 0;
     } else {
       return_value = 0;
     }
-    return 0;
-  } else {
-    rank_stored =0;
-    return 0;
+  }
+
+  if(rpl_select_dag(instance, p) == NULL) {
+    if(last_parent != NULL) {
+      /* No suitable parent anymore; trigger a local repair. */
+      LOG_ERR("No parents found in any DAG\n");
+      rpl_local_repair(instance);
+      return 0;
+    }
   }
 
 #if LOG_DBG_ENABLED
@@ -1598,9 +1606,9 @@ rpl_process_dio(uip_ipaddr_t *from, rpl_dio_t *dio)
   /* The DIO comes from a valid DAG, so we can refresh its lifetime. */
   dag->lifetime = (1UL << (instance->dio_intmin + instance->dio_intdoubl)) *
     RPL_DAG_LIFETIME / 1000;
-  LOG_INFO("Set DAG ");
-  LOG_INFO_6ADDR(&dag->dag_id);
-  LOG_INFO_(" lifetime to %ld\n", (long int)dag->lifetime);
+  LOG_DBG("Set DAG ");
+  LOG_DBG_6ADDR(&dag->dag_id);
+  LOG_DBG_(" lifetime to %ld\n", (long int)dag->lifetime);
 
   /*
    * At this point, we know that this DIO pertains to a DAG that we
@@ -1648,7 +1656,7 @@ rpl_process_dio(uip_ipaddr_t *from, rpl_dio_t *dio)
   /* Parent info has been updated, trigger rank recalculation. */
   p->flags |= RPL_PARENT_FLAG_UPDATED;
 
-  LOG_INFO("preferred DAG ");
+  LOG_INFO("Preferred DAG ");
   LOG_INFO_6ADDR(&instance->current_dag->dag_id);
   LOG_INFO_(", rank %u, min_rank %u, ",
             instance->current_dag->rank, instance->current_dag->min_rank);
@@ -1660,10 +1668,10 @@ rpl_process_dio(uip_ipaddr_t *from, rpl_dio_t *dio)
 #if RPL_WITH_MC
   memcpy(&p->mc, &dio->mc, sizeof(p->mc));
 #endif /* RPL_WITH_MC */
-//  if(rpl_process_parent_event(instance, p) == 0) {
-//    LOG_WARN("The candidate parent is rejected\n");
-//    return;
-//  }
+  if(rpl_process_parent_event(instance, p) == 0) {
+    LOG_WARN("The candidate parent is rejected\n");
+    return;
+  }
 
   /* We don't use route control, so we can have only one official parent. */
   if(dag->joined && p == dag->preferred_parent) {

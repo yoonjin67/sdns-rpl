@@ -58,6 +58,8 @@
 #include "contiki.h"
 #include "sys/etimer.h"
 
+#include <stdbool.h>
+
 struct ctimer {
   struct ctimer *next;
   struct etimer etimer;
@@ -107,23 +109,6 @@ void ctimer_restart(struct ctimer *c);
  * \param t    The interval before the timer expires.
  * \param f    A function to be called when the timer expires.
  * \param ptr  An opaque pointer that will be supplied as an argument to the callback function.
- *
- *             This function is used to set a callback timer for a time
- *             sometime in the future. When the callback timer expires,
- *             the callback function f will be called with ptr as argument.
- *
- *             This essentially does ctimer_set_process(c, t, f, ptr, PROCESS_CURRENT());
- *
- */
-void ctimer_set(struct ctimer *c, clock_time_t t,
-                void (*f)(void *), void *ptr);
-
-/**
- * \brief      Set a callback timer.
- * \param c    A pointer to the callback timer.
- * \param t    The interval before the timer expires.
- * \param f    A function to be called when the timer expires.
- * \param ptr  An opaque pointer that will be supplied as an argument to the callback function.
  * \param p    A pointer to the process the timer belongs to
  *
  *             This function is used to set a callback timer for a time
@@ -133,6 +118,26 @@ void ctimer_set(struct ctimer *c, clock_time_t t,
  */
 void ctimer_set_with_process(struct ctimer *c, clock_time_t t,
                              void (*f)(void *), void *ptr, struct process *p);
+
+/**
+ * \brief      Set a callback timer.
+ * \param c    A pointer to the callback timer.
+ * \param t    The interval before the timer expires.
+ * \param f    A function to be called when the timer expires.
+ * \param ptr  An opaque pointer that will be supplied as an argument to the callback function.
+ *
+ *             This function is used to set a callback timer for a time
+ *             sometime in the future. When the callback timer expires,
+ *             the callback function f will be called with ptr as argument.
+ *
+ *             This essentially does ctimer_set_process(c, t, f, ptr, PROCESS_CURRENT());
+ *
+ */
+static inline void
+ctimer_set(struct ctimer *c, clock_time_t t, void (*f)(void *), void *ptr)
+{
+  ctimer_set_with_process(c, t, f, ptr, PROCESS_CURRENT());
+}
 
 /**
  * \brief      Stop a pending callback timer.
@@ -149,12 +154,12 @@ void ctimer_stop(struct ctimer *c);
 /**
  * \brief      Check if a callback timer has expired.
  * \param c    A pointer to the callback timer
- * \return     Non-zero if the timer has expired, zero otherwise.
+ * \return     True if the timer has expired.
  *
  *             This function tests if a callback timer has expired and
  *             returns true or false depending on its status.
  */
-int ctimer_expired(struct ctimer *c);
+bool ctimer_expired(struct ctimer *c);
 
 /**
  * \brief      Initialize the callback timer library.

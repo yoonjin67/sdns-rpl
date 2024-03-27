@@ -46,17 +46,28 @@
 #define CC_H_
 
 #include "contiki.h"
-#include "sys/cc-gcc.h"
 
-#ifdef CC_CONF_INLINE
-#define CC_INLINE CC_CONF_INLINE
-#else /* CC_CONF_INLINE */
-#define CC_INLINE
-#endif /* CC_CONF_INLINE */
+#ifdef __GNUC__
+
+#define CC_CONF_ALIGN(n) __attribute__((__aligned__(n)))
+
+#ifndef CC_CONF_CONSTRUCTOR
+#define CC_CONF_CONSTRUCTOR(prio) __attribute__((constructor(prio)))
+#endif /* CC_CONF_CONSTRUCTOR */
+
+#ifndef CC_CONF_DESTRUCTOR
+#define CC_CONF_DESTRUCTOR(prio) __attribute__((destructor(prio)))
+#endif /* CC_CONF_DESTRUCTOR */
+
+#define CC_CONF_DEPRECATED(msg) __attribute__((deprecated(msg)))
+
+#define CC_CONF_NORETURN __attribute__((__noreturn__))
+
+#endif /* __GNUC__ */
 
 #ifdef CC_CONF_ALIGN
 #define CC_ALIGN(n) CC_CONF_ALIGN(n)
-#endif /* CC_CONF_INLINE */
+#endif /* CC_CONF_ALIGN */
 
 /**
  * Configure if the C compiler supports functions that are not meant to return
@@ -69,6 +80,30 @@
 #endif /* CC_CONF_NORETURN */
 
 /**
+ * Configure if the C compiler supports marking functions as constructors
+ * e.g. with __attribute__((constructor(prio))).
+ *
+ * Lower priority runs before higher priority. Priorities 0-100 are reserved.
+ */
+#ifdef CC_CONF_CONSTRUCTOR
+#define CC_CONSTRUCTOR(prio) CC_CONF_CONSTRUCTOR(prio)
+#else
+#define CC_CONSTRUCTOR(prio)
+#endif /* CC_CONF_CONSTRUCTOR */
+
+/**
+ * Configure if the C compiler supports marking functions as destructors
+ * e.g. with __attribute__((destructor(prio))).
+ *
+ * Lower priority runs before higher priority. Priorities 0-100 are reserved.
+ */
+#ifdef CC_CONF_DESTRUCTOR
+#define CC_DESTRUCTOR(prio) CC_CONF_DESTRUCTOR(prio)
+#else
+#define CC_DESTRUCTOR(prio)
+#endif /* CC_CONF_DESTRUCTOR */
+
+/**
  * Configure if the C compiler supports marking functions as deprecated
  * e.g. with __attribute__((deprecated))
  */
@@ -77,10 +112,6 @@
 #else
 #define CC_DEPRECATED(msg)
 #endif /* CC_CONF_DEPRECATED */
-
-#if CC_CONF_NO_VA_ARGS
-#define CC_NO_VA_ARGS CC_CONF_VA_ARGS
-#endif
 
 /** \def CC_ACCESS_NOW(x)
  * This macro ensures that the access to a non-volatile variable can

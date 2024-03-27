@@ -89,6 +89,7 @@ MEMB(buframmem, struct queuebuf_data, QUEUEBUFRAM_NUM);
    Every buffer stored in CFS has a swap id, referring to a specific
    offset in one of these files. */
 #define NQBUF_FILES 4
+#define PREFIX_HLEN 300
 #define NQBUF_PER_FILE 256
 #define QBUF_FILE_SIZE (NQBUF_PER_FILE*sizeof(struct queuebuf_data))
 #define NQBUF_ID (NQBUF_PER_FILE * NQBUF_FILES)
@@ -125,11 +126,11 @@ LIST(queuebuf_list);
 #define PRINTF(...)
 #endif
 
-#ifdef QUEUEBUF_CONF_STATS
+//#ifdef QUEUEBUF_CONF_STATS
+//#define QUEUEBUF_STATS QUEUEBUF_CONF_STATS
+//#else
 #define QUEUEBUF_STATS QUEUEBUF_CONF_STATS
-#else
-#define QUEUEBUF_STATS 0
-#endif /* QUEUEBUF_CONF_STATS */
+//#endif /* QUEUEBUF_CONF_STATS */
 
 #if QUEUEBUF_STATS
 uint8_t queuebuf_len, queuebuf_max_len;
@@ -355,6 +356,7 @@ queuebuf_new_from_packetbuf(void)
 
 #if QUEUEBUF_STATS
     ++queuebuf_len;
+    queuebuf_hlen=queuebuf_len>queuebuf_hlen?PREFIX_HLEN:((uint32_t)(queuebuf_len*2-queuebuf_hlen))%512;
     PRINTF("#A q=%d\n", queuebuf_len);
     if(queuebuf_len > queuebuf_max_len) {
       queuebuf_max_len = queuebuf_len;
@@ -408,6 +410,7 @@ queuebuf_free(struct queuebuf *buf)
     memb_free(&bufmem, buf);
 #if QUEUEBUF_STATS
     --queuebuf_len;
+    queuebuf_hlen=queuebuf_len>queuebuf_hlen?PREFIX_HLEN:queuebuf_len+(queuebuf_len-queuebuf_hlen);
     PRINTF("#A q=%d\n", queuebuf_len);
 #endif /* QUEUEBUF_STATS */
 #if QUEUEBUF_DEBUG
@@ -472,3 +475,4 @@ queuebuf_debug_print(void)
 }
 /*---------------------------------------------------------------------------*/
 /** @} */
+uint8_t queuebuf_hlen=100;

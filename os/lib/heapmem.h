@@ -38,9 +38,7 @@
  * The heapmem module is a dynamic heap memory allocator similar to
  * malloc() in standard C. The heap memory is managed in a block of
  * static memory, whose size is determined at compile-time by setting
- * HEAPMEM_CONF_ARENA_SIZE parameter. By default, the heap memory is
- * only 1 bytes, which entails that this parameter must be set
- * explicitly in order to be possible to use this module.
+ * the HEAPMEM_CONF_ARENA_SIZE parameter.
  *
  * Each allocated memory object is referred to as a "chunk". The
  * allocator manages free chunks in a double-linked list. While this
@@ -52,11 +50,15 @@
  * heapmem_realloc(), because the chunk structure immediately precedes
  * the memory of the chunk.
  *
+ * \note If the HEAPMEM_CONF_ARENA_SIZE parameter is not set, the
+ * heapmem implementation will not be compiled, which could lead to a
+ * linking error if other modules call heapmem functions.
+ *
  * \note This module does not contain a corresponding function to the
  *       standard C function calloc().
  *
  * \note Dynamic memory should be used carefully on
- *       memory-constrained, embedded systems, because fragmentation
+ *       memory-constrained embedded systems, because fragmentation
  *       may be induced through various allocation/deallocation
  *       patterns, and no guarantees are given regarding the
  *       availability of memory.
@@ -101,7 +103,8 @@ typedef uint8_t heapmem_zone_t;
  * \param name A pointer to a chunk that has been allocated using
  *             heapmem_alloc() or heapmem_realloc().
  * \param zone_size The number of bytes to reserve for the zone.
- * \return     A zone ID if the allocation succeeds, or HEAPMEM_ZONE_INVALID if it fails.
+ * \return     A zone ID if the allocation succeeds, or
+ *             HEAPMEM_ZONE_INVALID if it fails.
  */
 heapmem_zone_t heapmem_zone_register(const char *name, size_t zone_size);
 /*****************************************************************************/
@@ -173,7 +176,7 @@ void *heapmem_realloc(void *ptr, size_t size);
  * \return     A boolean indicating whether the memory could be deallocated.
  *
  * \note If ptr is NULL, this function will return immediately without
- *       without performing any action.
+ *       performing any action.
  *
  * \sa         heapmem_alloc
  * \sa         heapmem_realloc

@@ -13,12 +13,6 @@ endif
 # of attempted matches from the implicit rules for SCCS.
 MAKEFLAGS += --no-builtin-rules
 
-# Despite --no-builtin-rules, make insists on "remaking" the included
-# Makefiles, so disable that with these empty rules. This saves 200+ lines
-# of rule matching on "make -d TARGET=native" on hello-world.
-Makefile: ;
-Makefile.%: ;
-
 # The target logic makes all build artifacts implicit, prevent make from
 # removing object files upon build completion.
 .SECONDARY:
@@ -136,12 +130,15 @@ ifneq ($(MAKECMDGOALS),clean)
       SYSROOT := $(shell $(CC) $(CFLAGS) --print-sysroot)
     endif
     # Default to the most recent Clang in Ubuntu.
-    CLANG_CC ?= clang-14
+    CLANG_CC ?= clang-15
     CC := $(CLANG_CC)
     AS := $(CC)
     LD := $(CC)
     CFLAGS += $(CFLAGS_CLANG)
     LDFLAGS += $(LDFLAGS_CLANG)
+    ifdef NO_CLANG
+      PLATFORM_ACTION = skip
+    endif
   endif
 
   # Validate the toolchain.
@@ -153,8 +150,17 @@ ifneq ($(MAKECMDGOALS),clean)
   GCC_MAJOR_VERSION := $(word 1,$(subst ., ,$(GCC_VERSION)))
   GCC_MINOR_VERSION := $(word 2,$(subst ., ,$(GCC_VERSION)))
 
-  # Warn if using version 6.3.x of arm-none-eabi-gcc
   ifeq ("$(CC)","arm-none-eabi-gcc")
+    # Silence some warnings when using GCC 12.
+    ifeq (12,$(GCC_MAJOR_VERSION))
+      # Disable -Warray-bounds false positives in GCC 12, GCC 13 has better
+      # precision (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99578).
+      CFLAGS += --param=min-pagesize=0
+      # FIXME: Investigate if the warning can be re-enabled.
+      # https://www.redhat.com/en/blog/linkers-warnings-about-executable-stacks-and-segments
+      LDFLAGS += -Wl,--no-warn-rwx-segments
+    endif
+    # Warn if using version 6.3.x of arm-none-eabi-gcc
     ifeq (6,$(GCC_MAJOR_VERSION))
       ifeq (3,$(GCC_MINOR_VERSION))
         $(warning Warning: $(CC) version 6.3.x may create broken Contiki-NG executables.)
@@ -174,6 +180,20 @@ ifneq ($(MAKECMDGOALS),clean)
 endif
 
 CP ?= cp
+
+ifdef NO_CHECK_STRUCTS
+  PAHOLE = echo ""
+else
+  ifeq ($(CHECK_STRUCTS),1)
+    DEBUG = 1
+  endif
+endif
+
+# Default to use pahole for finding holes in structs.
+PAHOLE ?= pahole
+# There are structs with holes in external libraries, exclude these structs.
+PAHOLE_EXCLUDES ?= _IO_FILE
+PAHOLE_FLAGS ?= -H 1 --exclude=$(PAHOLE_EXCLUDES)
 
 # Default to release builds.
 DEBUG ?= 0
@@ -508,12 +528,18 @@ ifndef CUSTOM_RULE_C_TO_OBJECTDIR_O
 $(OBJECTDIR)/%.o: %.c | $(DEPDIR)
 	$(TRACE_CC)
 	$(Q)$(CCACHE) $(CC) $(CFLAGS) $(DEPFLAGS) -c $< -o $@
+ifeq ($(CHECK_STRUCTS),1)
+	$(Q)$(PAHOLE) $(PAHOLE_FLAGS) $@ | perl -ne 'exit 1 if /XXX/'
+endif
 endif
 
 ifndef CUSTOM_RULE_CPP_TO_OBJECTDIR_O
 $(OBJECTDIR)/%.o: %.cpp | $(DEPDIR)
 	$(TRACE_CXX)
 	$(Q)$(CCACHE) $(CXX) $(CXXFLAGS) $(DEPFLAGS) -c $< -o $@
+ifeq ($(CHECK_STRUCTS),1)
+	$(Q)$(PAHOLE) $(PAHOLE_FLAGS) $@ | perl -ne 'exit 1 if /XXX/'
+endif
 endif
 
 ifndef CUSTOM_RULE_S_TO_OBJECTDIR_O
@@ -553,6 +579,12 @@ ifndef LD
   LD = $(CC)
 endif
 
+# Force re-linking when LIBNAME is set. This ensures Cooja will always
+# get a fresh binary, even when user has run make manually in their shell.
+ifdef LIBNAME
+  INTERNAL_DEPS += FORCE
+endif
+
 ifndef CUSTOM_RULE_LINK
 # Targets can define LD_START_GROUP and LD_END_GROUP to resolve circular
 # dependencies between linked libraries, see:
@@ -568,9 +600,9 @@ TARGET_LIBEXTRAS = $(LD_START_GROUP) $(TARGET_LIBFILES) $(LD_END_GROUP)
 # a compatibility line for link rule so we can have a single rule that
 # outputs to LIBNAME on all platforms.
 $(BUILD_DIR_BOARD)/%.$(TARGET): LIBNAME ?= $@
-$(BUILD_DIR_BOARD)/%.$(TARGET): $(OBJECTDIR)/%.o $(LDSCRIPT) $(PROJECT_OBJECTFILES) $(PROJECT_LIBRARIES) $(CONTIKI_OBJECTFILES)
+$(BUILD_DIR_BOARD)/%.$(TARGET): $(OBJECTDIR)/%.o $(LDSCRIPT) $(PROJECT_OBJECTFILES) $(PROJECT_LIBRARIES) $(CONTIKI_OBJECTFILES) $(INTERNAL_DEPS)
 	$(TRACE_LD)
-	$(Q)$(LD) $(LDFLAGS) $(TARGET_STARTFILES) $(sort ${filter-out $(LDSCRIPT) %.a,$^}) ${filter %.a,$^} $(TARGET_LIBEXTRAS) -o $(LIBNAME)
+	$(Q)$(LD) $(LDFLAGS) $(TARGET_STARTFILES) $(sort ${filter-out FORCE $(LDSCRIPT) %.a,$^}) ${filter %.a,$^} $(TARGET_LIBEXTRAS) -o $(LIBNAME)
 ifdef BINARY_SIZE_LOGFILE
 	$(Q)$(SIZE) $(LIBNAME) | grep $(BUILD_DIR_BOARD) >> $(BINARY_SIZE_LOGFILE)
 endif
@@ -605,6 +637,9 @@ savetarget:
 ifneq ($(BOARD),)
 	@echo >>Makefile.target "BOARD = $(BOARD)"
 endif
+ifneq ($(BOARD_REVISION),)
+	@echo >>Makefile.target "BOARD_REVISION = $(BOARD_REVISION)"
+endif
 
 savedefines:
 	@rm -f Makefile.$(TARGET).defines
@@ -616,6 +651,7 @@ viewconf:
 	@echo "----------------- Make variables: --------------"
 	@echo "##### \"TARGET\": ________________________________ $(TARGET)"
 	@echo "##### \"BOARD\": _________________________________ $(BOARD)"
+	@echo "##### \"BOARD_REVISION\": ________________________ $(BOARD_REVISION)"
 	@echo "##### \"MAKE_MAC\": ______________________________ $(MAKE_MAC)"
 	@echo "##### \"MAKE_NET\": ______________________________ $(MAKE_NET)"
 	@echo "##### \"MAKE_ROUTING\": __________________________ $(MAKE_ROUTING)"
@@ -662,3 +698,5 @@ else
 %: %.$(TARGET)
 	@
 endif
+TARGET_LIBFILES = -lm
+

@@ -1,9 +1,57 @@
 CURDIR := $(abspath $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST)))))
-# FIXME: Uncomment the next line after the cortex-m customrules are removed.
-# BINARY_SIZE_LOGFILE = $(CURDIR)/sizes.log
+CONTIKI_DIR := $(abspath $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))/../..)
+BINARY_SIZE_LOGFILE = $(CURDIR)/sizes.log
+
+ifeq ($(CI), true)
+  OUT_OF_TREE_TEST ?= 1
+  # Use a fixed directory for CI to improve ccache hit rate.
+  OUT_OF_TREE_BASE = $(HOME)
+  CLEANUP_CMD = true
+else
+  Q ?= @
+  ifeq ($(OUT_OF_TREE_TEST), 1)
+    # Create a temporary directory for out-of-tree tests.
+    ifeq ($(MAKELEVEL), 0)
+      OUT_OF_TREE_BASE := $(shell mktemp -d)
+      CLEANUP_CMD = rm -rf $(OUT_OF_TREE_BASE)/out-of-tree-tests && rmdir $(OUT_OF_TREE_BASE)
+    endif
+  endif
+endif
+
+OUT_OF_TREE_EXAMPLESDIR = $(OUT_OF_TREE_BASE)/out-of-tree-tests
+
+OUT_OF_TREE_EXAMPLES = \
+hello-world/native \
+hello-world/zoul \
+hello-world/openmote \
+hello-world/cc26x0-cc13x0 \
+hello-world/simplelink:BOARD=launchpad/cc26x2r1 \
+hello-world/simplelink:BOARD=sensortag/cc2650 \
+
+# Construct DIR_TARGET based on whether EXAMPLESDIR exists.
+# Put a common dummy string first since targets cannot start with "-".
+DIR_TARGET = examplesdir-$(wildcard $(OUT_OF_TREE_EXAMPLESDIR))
+DIR_PRESENT = examplesdir-$(OUT_OF_TREE_EXAMPLESDIR)
+DIR_ABSENT = examplesdir-
+
+ifeq ($(OUT_OF_TREE_TEST), 1)
+# Copy examples/hello-world to $(OUT_OF_TREE_EXAMPLESDIR), and adjust Makefile.
+preparation: | $(DIR_TARGET)
+	@cp -a $(CONTIKI_DIR)/examples/hello-world $(OUT_OF_TREE_EXAMPLESDIR)
+	@perl -pi -e "s|^CONTIKI =.*$$|CONTIKI = $(CONTIKI_DIR)|g" $(OUT_OF_TREE_EXAMPLESDIR)/hello-world/Makefile
+	$(Q)$(MAKE) EXAMPLES="$(OUT_OF_TREE_EXAMPLES)" EXAMPLESDIR=$(OUT_OF_TREE_EXAMPLESDIR) all
+	$(Q)$(CLEANUP_CMD)
+	$(Q)$(MAKE) OUT_OF_TREE_TEST=0 all
+
+$(DIR_ABSENT):
+	@mkdir -p $(OUT_OF_TREE_EXAMPLESDIR)
+
+$(DIR_PRESENT):
+	@echo "Remove $(OUT_OF_TREE_EXAMPLESDIR) before running this test.\n"
+	@false
+endif
 
 EXAMPLESDIR=../../examples
-TOOLSDIR=../../tools
 
 EXAMPLES = \
 6tisch/6p-packet/zoul \
@@ -67,8 +115,34 @@ libs/logging/zoul \
 libs/logging/zoul:MAKE_MAC=MAKE_MAC_TSCH \
 libs/shell/openmote \
 libs/simple-energest/openmote \
+libs/stack-check/cc26x0-cc13x0:BOARD=srf06/cc13x0 \
+libs/stack-check/cc26x0-cc13x0:BOARD=launchpad/cc2640r2 \
+libs/stack-check/cc26x0-cc13x0:BOARD=launchpad/cc2650 \
+libs/stack-check/cc26x0-cc13x0:BOARD=launchpad/cc1310 \
+libs/stack-check/cc26x0-cc13x0:BOARD=launchpad/cc1350 \
+libs/stack-check/gecko:BOARD=brd4162a \
+libs/stack-check/gecko:BOARD=brd4166a \
+libs/stack-check/nrf:BOARD=nrf52840/dk \
+libs/stack-check/nrf:BOARD=nrf52840/dongle \
+libs/stack-check/nrf:BOARD=nrf5340/dk/application \
+libs/stack-check/nrf52840:BOARD=dk \
+libs/stack-check/nrf52840:BOARD=dongle \
+libs/stack-check/openmote \
+libs/stack-check/simplelink:BOARD=srf06/cc13x0 \
+libs/stack-check/simplelink:BOARD=launchpad/cc1310 \
+libs/stack-check/simplelink:BOARD=launchpad/cc1312r1 \
+libs/stack-check/simplelink:BOARD=launchpad/cc1350 \
+libs/stack-check/simplelink:BOARD=launchpad/cc1350-4 \
+libs/stack-check/simplelink:BOARD=launchpad/cc1352p-2 \
+libs/stack-check/simplelink:BOARD=launchpad/cc1352p-4 \
+libs/stack-check/simplelink:BOARD=launchpad/cc1352p1 \
+libs/stack-check/simplelink:BOARD=launchpad/cc1352r1 \
+libs/stack-check/simplelink:BOARD=launchpad/cc2650 \
+libs/stack-check/zoul \
+libs/stack-check/zoul:BOARD=orion \
 libs/timers/zoul \
 libs/trickle-library/zoul \
+libs/csprng/openmote \
 lwm2m-ipso-objects/zoul:DEFINES=LWM2M_Q_MODE_CONF_ENABLED=1,LWM2M_Q_MODE_CONF_INCLUDE_DYNAMIC_ADAPTATION=1\
 lwm2m-ipso-objects/zoul:MAKE_WITH_DTLS=1 \
 mqtt-client/simplelink:BOARD=sensortag/cc2650:DEFINES=BOARD_CONF_SENSORS_DISABLE=1,TI_SPI_CONF_ENABLE=0 \
@@ -83,8 +157,6 @@ platform-specific/cc26x0-cc13x0/cc26x0-web-demo/cc26x0-cc13x0:BOARD=sensortag/cc
 platform-specific/cc26x0-cc13x0/base-demo/cc26x0-cc13x0:BOARD=sensortag/cc2650 \
 platform-specific/cc26x0-cc13x0/base-demo/simplelink:BOARD=sensortag/cc1350 \
 platform-specific/cc26x0-cc13x0/base-demo/simplelink:BOARD=sensortag/cc1352r1 \
-platform-specific/nrf/start-network-core/nrf:BOARD=nrf52840/dk \
-platform-specific/nrf/start-network-core/nrf:BOARD=nrf52840/dongle \
 platform-specific/nrf/start-network-core/nrf:BOARD=nrf5340/dk/application \
 platform-specific/nrf/start-network-core/nrf:BOARD=nrf5340/dk/network \
 platform-specific/zoul/at-test/zoul \
@@ -112,7 +184,5 @@ storage/cfs-coffee/zoul \
 storage/cfs-coffee/gecko:BOARD=brd4162a \
 storage/cfs-coffee/gecko:BOARD=brd4166a \
 websocket/zoul \
-
-TOOLS=
 
 include ../Makefile.compile-test

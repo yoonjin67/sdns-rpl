@@ -49,10 +49,20 @@
 #include "sys/process.h"
 
 /*
+ * A configurable function called after a process poll been requested.
+ */
+#ifdef PROCESS_CONF_POLL_REQUESTED
+#define PROCESS_POLL_REQUESTED PROCESS_CONF_POLL_REQUESTED
+void PROCESS_POLL_REQUESTED(void);
+#else
+#define PROCESS_POLL_REQUESTED()
+#endif
+
+/*
  * Pointer to the currently running process structure.
  */
-struct process *process_list = NULL;
-struct process *process_current = NULL;
+struct process *process_list;
+struct process *process_current;
 
 static process_event_t lastevent;
 
@@ -60,9 +70,9 @@ static process_event_t lastevent;
  * Structure used for keeping the queue of active events.
  */
 struct event_data {
-  process_event_t ev;
   process_data_t data;
   struct process *p;
+  process_event_t ev;
 };
 
 static process_num_events_t nevents, fevent;
@@ -137,18 +147,6 @@ exit_process(struct process *p, const struct process *fromprocess)
 
   if(process_is_running(p)) {
     /* Process was running */
-    p->state = PROCESS_STATE_NONE;
-
-    /*
-     * Post a synchronous event to all processes to inform them that
-     * this process is about to exit. This will allow services to
-     * deallocate state associated with this process.
-     */
-    for(q = process_list; q != NULL; q = q->next) {
-      if(p != q) {
-        call_process(q, PROCESS_EVENT_EXITED, (process_data_t)p);
-      }
-    }
 
     if(p->thread != NULL && p != fromprocess) {
       /* Post the exit event to the process that is about to exit. */
@@ -165,6 +163,20 @@ exit_process(struct process *p, const struct process *fromprocess)
         q->next = p->next;
         break;
       }
+    }
+  }
+
+  if(process_is_running(p)) {
+    /* Process was running */
+    p->state = PROCESS_STATE_NONE;
+
+    /*
+     * Post a synchronous event to all processes to inform them that
+     * this process is about to exit. This will allow services to
+     * deallocate state associated with this process.
+     */
+    for(q = process_list; q != NULL; q = q->next) {
+        call_process(q, PROCESS_EVENT_EXITED, (process_data_t)p);
     }
   }
 
@@ -208,13 +220,6 @@ void
 process_init(void)
 {
   lastevent = PROCESS_EVENT_MAX;
-
-  nevents = fevent = 0;
-#if PROCESS_CONF_STATS
-  process_maxevents = 0;
-#endif /* PROCESS_CONF_STATS */
-
-  process_current = process_list = NULL;
 }
 /*---------------------------------------------------------------------------*/
 /*
@@ -375,6 +380,7 @@ process_poll(struct process *p)
        p->state == PROCESS_STATE_CALLED) {
       p->needspoll = 1;
       poll_requested = 1;
+      PROCESS_POLL_REQUESTED();
     }
   }
 }

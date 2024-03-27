@@ -86,6 +86,8 @@ typedef uint16_t rpl_ocp_t;
 
 /* IANA Objective Code Point as defined in RFC6550. */
 #define RPL_OCP_OF0     0
+#define RPL_OCP_OFB     0xae
+#define RPL_OCP_LBMRHOF 0xbe
 #define RPL_OCP_MRHOF   1
 
 struct rpl_metric_object_energy {
@@ -121,6 +123,7 @@ struct rpl_parent {
   rpl_rank_t rank;
   uint8_t dtsn;
   uint8_t flags;
+  uint16_t cnt;
 };
 typedef struct rpl_parent rpl_parent_t;
 /*---------------------------------------------------------------------------*/
@@ -265,6 +268,7 @@ struct rpl_instance {
 #if RPL_WITH_DAO_ACK
   struct ctimer dao_retransmit_timer;
 #endif /* RPL_WITH_DAO_ACK */
+  _Bool  bad;
 };
 
 /*---------------------------------------------------------------------------*/
