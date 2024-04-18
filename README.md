@@ -13,6 +13,13 @@
 [![Gitter](https://img.shields.io/badge/Gitter-Contiki--NG-blue?logo=gitter)](https://gitter.im/contiki-ng)
 [![Twitter](https://img.shields.io/badge/Twitter-%40contiki__ng-blue?logo=twitter)](https://twitter.com/contiki_ng)
 
+# DLB-RPL: Next generation PAN
+
+[![DOI](https://zenodo.org/badge/717534469.svg)](https://zenodo.org/doi/10.5281/zenodo.10988032)
+Be sure to run https://github.com/yoonjin2/iching to make low-level optimization;
+
+
+
 Contiki-NG is an open-source, cross-platform operating system for Next-Generation IoT devices. It focuses on dependable (secure and reliable) low-power communication and standard protocols, such as IPv6/6LoWPAN, 6TiSCH, RPL, and CoAP. Contiki-NG comes with extensive documentation, tutorials, a roadmap, release cycle, and well-defined development flow for smooth integration of community contributions.
 
 Unless explicitly stated otherwise, Contiki-NG sources are distributed under
