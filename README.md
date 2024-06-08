@@ -41,7 +41,6 @@ Engage with the community:
 
 
 # SDNS-RPL: Next generation PAN
-
-[![DOI](https://zenodo.org/badge/717534469.svg)](https://zenodo.org/doi/10.5281/zenodo.10988032)
+This is propagated and deviated Next-Generation PAN. Maximum: 37% higher performance than vanilla RPL with MRHOF.
 Be sure to encrypt binary and payloads. Also, this is elaborate Routing method. Don't care about your workspace, it is good to get into small rooms. Also, this has rewarded into MDPI and National Research Foundation of Korea. So don't forget to thank for Nation. 
 All rights reserved into South Korea.
