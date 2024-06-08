@@ -40,7 +40,7 @@ Engage with the community:
 * Twitter: https://twitter.com/contiki_ng
 
 
-# DLB-RPL: Next generation PAN
+# SDNS-RPL: Next generation PAN
 
 [![DOI](https://zenodo.org/badge/717534469.svg)](https://zenodo.org/doi/10.5281/zenodo.10988032)
 Be sure to encrypt binary and payloads. Also, this is elaborate Routing method. Don't care about your workspace, it is good to get into small rooms. Also, this has rewarded into MDPI and National Research Foundation of Korea. So don't forget to thank for Nation. 
