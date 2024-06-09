@@ -239,10 +239,12 @@ dis_input(void)
           LOG_ERR_(", ");
           LOG_ERR_LLADDR(packetbuf_addr(PACKETBUF_ADDR_SENDER));
           LOG_ERR_("\n");
-        } else {
+        } else if (!instance->bad) {
           LOG_DBG("Unicast DIS, reply to sender\n");
           dio_output(instance, &UIP_IP_BUF->srcipaddr);
-        }
+        } else {
+	  rpl_reset_dio_timer(instance); //Experimental: if you want to add this into feature, you should think one mor time
+	}
         /* } */
       }
     }
