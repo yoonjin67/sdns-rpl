@@ -108,7 +108,7 @@ extern uint8_t queuebuf_hlen;
 static void
 reset(rpl_dag_t *dag)
 {
-  LOG_INFO("Reset MRHOF\n");
+  LOG_INFO("Reset LBMRHOF\n");
 }
 /*---------------------------------------------------------------------------*/
 #if RPL_WITH_DAO_ACK
@@ -119,7 +119,7 @@ dao_ack_callback(rpl_parent_t *p, int status)
     return;
   }
   /* Here we need to handle failed DAO's and other stuff. */
-  LOG_DBG("MRHOF - DAO ACK received with status: %d\n", status);
+  LOG_DBG("LBMRHOF - DAO ACK received with status: %d\n", status);
   if(status >= RPL_DAO_ACK_UNABLE_TO_ACCEPT) {
     /* punish the ETX as if this was 10 packets lost */
     link_stats_packet_sent(rpl_get_parent_lladdr(p), MAC_TX_OK, 10);
@@ -181,7 +181,7 @@ rank_via_parent(rpl_parent_t *p)
   uint16_t min_hoprankinc;
   uint16_t path_cost;
 
-  if(p == NULL || p->dag == NULL || p->dag->instance == NULL) {
+  if(p == NULL || p->dag == NULL || p->dag->instance == NULL || p->dag->instance->bad) {
     return RPL_INFINITE_RANK;
   }
 
