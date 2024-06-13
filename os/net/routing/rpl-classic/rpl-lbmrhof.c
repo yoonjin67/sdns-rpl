@@ -249,13 +249,17 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   if(dag->instance->bad) {
   /* Maintain the stability of the preferred parent in case of similar ranks. */
     if(p1_cost+PARENT_SWITCH_THRESHOLD < p2_cost) {
+      p1++;
       return p1;
     } else if(p1_cost > p2_cost+PARENT_SWITCH_THRESHOLD) {
+      p2++;
       return p2;
     } else {
       if(p1->cnt+FPT<p2->cnt) {
+        p2++;
         return p2;
       } else if(p2->cnt+FPT<p1->cnt){
+        p1++;
         return p1;
       }
     }
