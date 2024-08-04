@@ -45,6 +45,6 @@ This is propagated and deviated Next-Generation PAN. Maximum: 37% higher perform
 Be sure to encrypt binary and payloads. Also, this is elaborate Routing method. Don't care about your workspace, it is good to get into small rooms.-
 All rights reversed :P/
 
-This made its performance 10-37% higher than vanilla MRHOF, and this supports mobility. I already applied this into every devices, and made my personal network area into each 6lowpan devices. This would be safer with I-Ching based security solution, however I trust publics; so I opened Port 443 to join my network area. I still have my root account anyway. 
+This made its performance 10-37% higher than vanilla MRHOF, and this supports mobility. I already applied this into every devices, and made my personal network area into each 6lowpan devices.
 
 ## This is successor of DLB-RPL: See https://zenodo.org/records/10988033 for previous record.
