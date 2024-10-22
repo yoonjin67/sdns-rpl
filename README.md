@@ -46,5 +46,3 @@ Be sure to encrypt binary and payloads. Also, this is elaborate Routing method. 
 All rights reversed :P/
 
 This made its performance 10-37% higher than vanilla MRHOF, and this supports mobility. I already applied this into every devices, and made my personal network area into each 6lowpan devices.
-
-## This is successor of DLB-RPL: See https://zenodo.org/records/10988033 for previous record.
